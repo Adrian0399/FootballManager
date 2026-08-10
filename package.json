@@ -1,0 +1,29 @@
+{
+  "name": "kaibil-football-league-manager",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Kaibil Football League Manager monorepo",
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel --stream run dev",
+    "build": "pnpm -r run build",
+    "lint": "pnpm -r run lint",
+    "test": "pnpm -r run test",
+    "db:up": "docker compose -f docker/docker-compose.yml --env-file docker/.env up -d",
+    "db:down": "docker compose -f docker/docker-compose.yml --env-file docker/.env down",
+    "db:logs": "docker compose -f docker/docker-compose.yml --env-file docker/.env logs -f",
+    "db:migrate": "pnpm --filter backend run db:migrate",
+    "db:migrate:deploy": "pnpm --filter backend run db:migrate:deploy",
+    "db:seed": "pnpm --filter backend run db:seed",
+    "db:studio": "pnpm --filter backend run db:studio",
+    "db:reset": "pnpm --filter backend run db:reset"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3"
+  },
+  "packageManager": "pnpm@9.12.3"
+}

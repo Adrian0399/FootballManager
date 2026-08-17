@@ -1,0 +1,639 @@
+// Kaibil Football League Manager — Prisma schema
+// See /docs/er-diagram.md and README for conventions.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =====================================================================
+// ENUMS
+// =====================================================================
+
+enum UserRole {
+  ADMIN
+  REFEREE
+  TECHNICAL_DIRECTOR
+  ASSISTANT
+  PLAYER
+}
+
+// ----- v1.1 additions (Paso 5–10 del roadmap) -----
+
+// Role of a User on a specific Team. Different from UserRole (which
+// is for permissions). A single User can be DT on one team and PLAYER
+// on another.
+enum TeamRole {
+  PLAYER
+  DT
+  ASSISTANT
+}
+
+// Position on the field. Covers 11-a-side (GK/DEF/MID/FWD) and
+// 5-a-side futsal positions (FIXO/ALA/PIVOT).
+enum FieldPosition {
+  GK
+  DEF
+  MID
+  FWD
+  FIXO
+  ALA
+  PIVOT
+}
+
+// Number of players per team on the field. The Prisma value is the
+// SQL identifier; the frontend maps to the display "1V1" / "5V5" etc.
+enum LeagueFormat {
+  ONE_V_ONE
+  THREE_V_THREE
+  FIVE_V_FIVE
+  SIX_V_SIX
+  SEVEN_V_SEVEN
+  NINE_V_NINE
+  ELEVEN_V_ELEVEN
+}
+
+// Tournament structure.
+enum LeagueType {
+  ROUND_ROBIN
+  GROUPS_KNOCKOUT
+  KNOCKOUT_ONLY
+}
+
+enum WeekDay {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum TimeSlot {
+  MORNING
+  AFTERNOON
+  EVENING
+  NIGHT
+}
+
+enum LeagueStatus {
+  PLANNED
+  IN_PROGRESS
+  FINISHED
+}
+
+enum MatchStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  POSTPONED
+  CANCELLED
+}
+
+enum MatchdayStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum EventType {
+  GOAL
+  ASSIST
+  YELLOW_CARD
+  RED_CARD
+  SUBSTITUTION
+  MVP
+  NOTE
+}
+
+enum ScoringMode {
+  LIVE
+  POST_MATCH
+}
+
+enum KnockoutStage {
+  ROUND_OF_16
+  QUARTERS
+  SEMIS
+  FINAL
+  THIRD_PLACE
+}
+
+// ----- v1.2 additions (Fase C — perfil real) -----
+
+// Kind of award a user can receive.
+enum AwardCategory {
+  SCORER
+  MVP
+  FAIR_PLAY
+  CHAMPION
+  BEST_DEFENSE
+}
+
+// Prestige tier of an award.
+enum AwardLevel {
+  GOLD
+  SILVER
+  BRONZE
+}
+
+// =====================================================================
+// MODELS
+// =====================================================================
+
+model User {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  firstName        String   @map("first_name") @db.VarChar(100)
+  paternalSurname  String   @map("paternal_surname") @db.VarChar(100)
+  maternalSurname  String   @map("maternal_surname") @db.VarChar(100)
+  birthDate        DateTime @map("birth_date") @db.Date
+  // Computed in the application layer from birthDate. Kept as a regular column
+  // for query convenience; must always equal EXTRACT(YEAR FROM AGE(birth_date)).
+  age              Int      @default(0)
+  role             UserRole @map("role")
+  nickname         String?  @map("nickname") @db.VarChar(80)
+  phoneNumber      String   @map("phone_number") @db.VarChar(20)
+  email            String   @unique @db.VarChar(255)
+  curp             String   @unique @db.VarChar(18)
+  passwordHash     String   @map("password_hash") @db.VarChar(255)
+  isActive         Boolean  @default(true) @map("is_active")
+  profilePhotoPath String?  @map("profile_photo_path") @db.VarChar(500)
+  coverPhotoPath   String?  @map("cover_photo_path") @db.VarChar(500)
+
+  // ----- Audit columns (mandatory on every table) -----
+  createdAt   DateTime @default(now()) @map("created_at")
+  createdById String?  @map("created_by") @db.Uuid
+  createdBy   User?    @relation("UserCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  updatedById String?  @map("updated_by") @db.Uuid
+  updatedBy   User?    @relation("UserUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  // ----- Soft delete -----
+  deletedAt DateTime? @map("deleted_at")
+
+  // ----- Reverse relations -----
+  refreshTokens            RefreshToken[] @relation("RefreshTokenOwner")
+  usersCreatedByMe         User[]         @relation("UserCreatedBy")
+  usersUpdatedByMe         User[]         @relation("UserUpdatedBy")
+  refreshTokensCreatedByMe RefreshToken[] @relation("RefreshTokenCreatedBy")
+  refreshTokensUpdatedByMe RefreshToken[] @relation("RefreshTokenUpdatedBy")
+  fieldsCreatedByMe        Field[]        @relation("FieldCreatedBy")
+  fieldsUpdatedByMe        Field[]        @relation("FieldUpdatedBy")
+  leaguesCreatedByMe       League[]       @relation("LeagueCreatedBy")
+  leaguesUpdatedByMe       League[]       @relation("LeagueUpdatedBy")
+
+  // ----- v1.1 — Team / membership / match relations -----
+  teamMemberships            TeamMembership[] @relation("TeamMembershipUser")
+  teamMembershipsCreatedByMe TeamMembership[] @relation("TeamMembershipCreatedBy")
+  teamMembershipsUpdatedByMe TeamMembership[] @relation("TeamMembershipUpdatedBy")
+  teamsCreatedByMe           Team[]           @relation("TeamCreatedBy")
+  teamsUpdatedByMe           Team[]           @relation("TeamUpdatedBy")
+  leagueTeamsCreatedByMe     LeagueTeam[]     @relation("LeagueTeamCreatedBy")
+  leagueTeamsUpdatedByMe     LeagueTeam[]     @relation("LeagueTeamUpdatedBy")
+  matchdaysCreatedByMe       Matchday[]       @relation("MatchdayCreatedBy")
+  matchdaysUpdatedByMe       Matchday[]       @relation("MatchdayUpdatedBy")
+  matchesCreatedByMe         Match[]          @relation("MatchCreatedBy")
+  matchesUpdatedByMe         Match[]          @relation("MatchUpdatedBy")
+  matchesAsReferee           Match[]          @relation("MatchReferee")
+  matchesAsMvp               Match[]          @relation("MatchMvp")
+  matchEventsAsUser          MatchEvent[]     @relation("EventUser")
+  matchEventsAsSecondaryUser MatchEvent[]     @relation("EventSecondaryUser")
+  matchEventsCreatedByMe     MatchEvent[]     @relation("MatchEventCreatedBy")
+
+  // ----- v1.2 — Awards -----
+  awardsWon           Award[] @relation("AwardWinner")
+  awardsCreatedByMe   Award[] @relation("AwardCreatedBy")
+  awardsUpdatedByMe   Award[] @relation("AwardUpdatedBy")
+
+  @@index([email])
+  @@index([curp])
+  @@index([role])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model RefreshToken {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  user       User      @relation("RefreshTokenOwner", fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique @map("token_hash") @db.VarChar(255)
+  expiresAt  DateTime  @map("expires_at")
+  revokedAt  DateTime? @map("revoked_at")
+  replacedBy String?   @map("replaced_by") @db.Uuid
+
+  // ----- Audit columns (mandatory) -----
+  createdAt   DateTime @default(now()) @map("created_at")
+  createdById String?  @map("created_by") @db.Uuid
+  createdBy   User?    @relation("RefreshTokenCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  updatedById String?  @map("updated_by") @db.Uuid
+  updatedBy   User?    @relation("RefreshTokenUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
+  @@index([revokedAt])
+  @@map("refresh_tokens")
+}
+
+// =====================================================================
+// DOMAIN — Fields (canchas) and Leagues (ligas)
+//
+// Multi-tenant note: the entire database belongs to ONE owner. There is
+// no `owner_id` column on these tables. The single-tenant model is by
+// design — each owner gets their own database instance (no shared
+// orchestrator, no row-level isolation).
+//
+// Relationship: League ↔ Field is many-to-many. A league can be played
+// in 1..N fields, and a field can host N leagues. Modeled with an
+// explicit join table so the join can carry the 4 mandatory audit
+// columns and any future per-relation metadata (e.g. primary field,
+// scheduled day, etc.).
+// =====================================================================
+
+model Field {
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String  @db.VarChar(100)
+  address     String? @db.VarChar(255)
+  description String? @db.VarChar(1000)
+  capacity    Int?
+  isActive    Boolean @default(true) @map("is_active")
+
+  // ----- Audit columns (mandatory) -----
+  createdAt   DateTime  @default(now()) @map("created_at")
+  createdById String?   @map("created_by") @db.Uuid
+  createdBy   User?     @relation("FieldCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  updatedById String?   @map("updated_by") @db.Uuid
+  updatedBy   User?     @relation("FieldUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  deletedAt   DateTime? @map("deleted_at")
+
+  // ----- Reverse relations -----
+  leagueFields     LeagueField[]
+  // Teams that have this field as their home field.
+  teamsAsHomeField Team[]        @relation("TeamHomeField")
+  // Matches played at this field.
+  matches          Match[]       @relation("MatchField")
+
+  @@index([name])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@map("fields")
+}
+
+model League {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String    @db.VarChar(100)
+  description String?   @db.VarChar(1000)
+  season      String?   @db.VarChar(50)
+  startDate   DateTime? @map("start_date") @db.Date
+  endDate     DateTime? @map("end_date") @db.Date
+  isActive    Boolean   @default(true) @map("is_active")
+
+  // ----- v1.1 — Tournament config (Paso 4 del roadmap) -----
+  // Players on the field per team. NULL means "not configured yet".
+  format         LeagueFormat? @map("format")
+  // Free-text category. e.g. "LIBRE", "SUB-17", "JUVENIL MATUTINA".
+  category       String?       @map("category") @db.VarChar(50)
+  // Tournament structure.
+  type           LeagueType?   @map("type")
+  // Number of matchdays in the round-robin phase (computed by fixture
+  // generation but stored for query convenience).
+  matchdaysCount Int?          @map("matchdays")
+  // True if home/away is played twice per pairing.
+  homeAndAway    Boolean?      @map("home_and_away")
+  // Maximum number of teams allowed. Triggers over-capacity warnings.
+  maxTeams       Int?          @map("max_teams")
+  // Default day of the week for matches.
+  dayOfWeek      WeekDay?      @map("day_of_week")
+  // Default time slot.
+  timeSlot       TimeSlot?     @map("time_slot")
+  // Aggregated status. Updated by the standings service.
+  status         LeagueStatus? @map("status")
+
+  // ----- Audit columns (mandatory) -----
+  createdAt   DateTime  @default(now()) @map("created_at")
+  createdById String?   @map("created_by") @db.Uuid
+  createdBy   User?     @relation("LeagueCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  updatedById String?   @map("updated_by") @db.Uuid
+  updatedBy   User?     @relation("LeagueUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  deletedAt   DateTime? @map("deleted_at")
+
+  // ----- Reverse relations -----
+  leagueFields         LeagueField[]
+  // v1.1 — fixtures, matchdays, teams, knockout participants
+  matchdays            Matchday[]    @relation("MatchdayLeague")
+  matches              Match[]
+  leagueTeams          LeagueTeam[]
+  // Teams that have this league as their current one (for "what league
+  // is this team currently playing in" lookups).
+  teamsAsCurrentLeague Team[]        @relation("TeamCurrentLeague")
+
+  // v1.2 — awards handed out within this league
+  awards               Award[]
+
+  @@index([name])
+  @@index([season])
+  @@index([isActive])
+  @@index([format])
+  @@index([status])
+  @@index([matchdaysCount])
+  @@index([deletedAt])
+  @@map("leagues")
+}
+
+model LeagueField {
+  leagueId String @map("league_id") @db.Uuid
+  fieldId  String @map("field_id") @db.Uuid
+  league   League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  field    Field  @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  // ----- Audit columns (mandatory) -----
+  createdAt   DateTime @default(now()) @map("created_at")
+  createdById String?  @map("created_by") @db.Uuid
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  updatedById String?  @map("updated_by") @db.Uuid
+
+  @@id([leagueId, fieldId])
+  @@index([fieldId])
+  @@index([leagueId])
+  @@map("league_fields")
+}
+
+// =====================================================================
+// DOMAIN — Teams, memberships, fixtures, matches, events
+// (v1.0.0 roadmap Pasos 3–9)
+//
+// Hierarchy: User (DT/Assistant/Player) joins a Team via TeamMembership.
+//           Team joins a League via LeagueTeam (with seed + optional group).
+//           Matchday groups Matches inside a League.
+//           Match belongs to a Matchday and pits two Teams (or two players
+//           in 1v1) against each other.
+//           MatchEvent records goals / assists / cards / MVP / etc.
+//           for a specific Match.
+// =====================================================================
+
+model Team {
+  id              String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String  @db.VarChar(100)
+  shortName       String  @db.VarChar(10)
+  // Sports emoji used as a placeholder logo in v1.0.0. Becomes logoUrl in v1.1.
+  emoji           String? @db.VarChar(10)
+  primaryColor    String  @map("primary_color") @db.VarChar(20)
+  secondaryColor  String  @map("secondary_color") @db.VarChar(20)
+  homeFieldId     String? @map("home_field_id") @db.Uuid
+  isActive        Boolean @default(true) @map("is_active")
+  // The league the team is currently competing in (display only;
+  // the source of truth for membership is LeagueTeam).
+  currentLeagueId String? @map("current_league_id") @db.Uuid
+
+  // ----- Audit columns (mandatory) -----
+  createdAt   DateTime  @default(now()) @map("created_at")
+  createdById String?   @map("created_by") @db.Uuid
+  createdBy   User?     @relation("TeamCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  updatedById String?   @map("updated_by") @db.Uuid
+  updatedBy   User?     @relation("TeamUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  deletedAt   DateTime? @map("deleted_at")
+
+  // ----- Reverse relations -----
+  homeField     Field?           @relation("TeamHomeField", fields: [homeFieldId], references: [id], onDelete: SetNull)
+  currentLeague League?          @relation("TeamCurrentLeague", fields: [currentLeagueId], references: [id], onDelete: SetNull)
+  memberships   TeamMembership[]
+  leagueEntries LeagueTeam[]
+  homeMatches   Match[]          @relation("MatchHome")
+  awayMatches   Match[]          @relation("MatchAway")
+  events        MatchEvent[]
+  awards        Award[]
+
+  @@index([name])
+  @@index([homeFieldId])
+  @@index([currentLeagueId])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@map("teams")
+}
+
+// Join row: User ↔ Team with a per-team role. A single User can be
+// DT on one team and PLAYER on another (the user's global UserRole
+// is for permissions, the membershipRole is for in-team duties).
+model TeamMembership {
+  id             String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  teamId         String         @map("team_id") @db.Uuid
+  userId         String         @map("user_id") @db.Uuid
+  membershipRole TeamRole       @map("membership_role")
+  // Jersey number. Meaningful only when membershipRole = PLAYER.
+  jerseyNumber   Int?           @map("jersey_number")
+  // Position. Meaningful only when membershipRole = PLAYER.
+  position       FieldPosition?
+  isCaptain      Boolean        @default(false) @map("is_captain")
+  joinedAt       DateTime       @default(now()) @map("joined_at")
+
+  // ----- Audit columns (mandatory) -----
+  createdAt   DateTime @default(now()) @map("created_at")
+  createdById String?  @map("created_by") @db.Uuid
+  createdBy   User?    @relation("TeamMembershipCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  updatedById String?  @map("updated_by") @db.Uuid
+  updatedBy   User?    @relation("TeamMembershipUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation("TeamMembershipUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([userId])
+  @@index([membershipRole])
+  @@index([isCaptain])
+  @@map("team_memberships")
+}
+
+// League ↔ Team junction. The `seed` (1-based) controls home/away
+// pairings in round-robin and the bracket position in knockout. The
+// `groupLabel` is set for GROUPS_KNOCKOUT leagues (e.g. "A", "B").
+model LeagueTeam {
+  leagueId   String  @map("league_id") @db.Uuid
+  teamId     String  @map("team_id") @db.Uuid
+  seed       Int
+  groupLabel String? @map("group_label") @db.VarChar(5)
+
+  // ----- Audit columns (mandatory) -----
+  createdAt   DateTime @default(now()) @map("created_at")
+  createdById String?  @map("created_by") @db.Uuid
+  createdBy   User?    @relation("LeagueTeamCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  updatedById String?  @map("updated_by") @db.Uuid
+  updatedBy   User?    @relation("LeagueTeamUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  league League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@id([leagueId, teamId])
+  @@index([teamId])
+  @@index([seed])
+  @@map("league_teams")
+}
+
+// A jornada inside a league's round-robin. Each matchday has N/2
+// matches (where N is the number of teams).
+model Matchday {
+  id       String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  leagueId String         @map("league_id") @db.Uuid
+  // 1-based jornada number. Matchday 1 is the opening round.
+  number   Int
+  // Date of the jornada (YYYY-MM-DD).
+  date     DateTime       @map("date") @db.Date
+  status   MatchdayStatus @default(PENDING)
+
+  // ----- Audit columns (mandatory) -----
+  createdAt   DateTime @default(now()) @map("created_at")
+  createdById String?  @map("created_by") @db.Uuid
+  createdBy   User?    @relation("MatchdayCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  updatedById String?  @map("updated_by") @db.Uuid
+  updatedBy   User?    @relation("MatchdayUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  league  League  @relation("MatchdayLeague", fields: [leagueId], references: [id], onDelete: Cascade)
+  matches Match[]
+
+  @@unique([leagueId, number])
+  @@index([leagueId])
+  @@index([date])
+  @@map("matchdays")
+}
+
+// A single fixture between two Teams (or two players in 1v1).
+// Status flows: SCHEDULED → IN_PROGRESS → COMPLETED.
+// In knockout stages, the winner advances to `knockoutFeedsIntoMatchId`.
+model Match {
+  id                       String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  leagueId                 String         @map("league_id") @db.Uuid
+  matchdayId               String         @map("matchday_id") @db.Uuid
+  homeTeamId               String         @map("home_team_id") @db.Uuid
+  awayTeamId               String         @map("away_team_id") @db.Uuid
+  fieldId                  String?        @map("field_id") @db.Uuid
+  // Scheduled kickoff.
+  scheduledAt              DateTime       @map("scheduled_at")
+  status                   MatchStatus    @default(SCHEDULED)
+  homeScore                Int?           @map("home_score")
+  awayScore                Int?           @map("away_score")
+  refereeId                String?        @map("referee_id") @db.Uuid
+  mvpUserId                String?        @map("mvp_user_id") @db.Uuid
+  scoringMode              ScoringMode?   @map("scoring_mode")
+  notes                    String?        @map("notes")
+  // Set for knockout-stage matches; NULL for round-robin.
+  knockoutStage            KnockoutStage? @map("knockout_stage")
+  // 1-based position within the stage.
+  knockoutPosition         Int?           @map("knockout_position")
+  // The winner of this match advances to this match id.
+  knockoutFeedsIntoMatchId String?        @map("knockout_feeds_into_match_id") @db.Uuid
+
+  // ----- Audit columns (mandatory) -----
+  createdAt   DateTime @default(now()) @map("created_at")
+  createdById String?  @map("created_by") @db.Uuid
+  createdBy   User?    @relation("MatchCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  updatedById String?  @map("updated_by") @db.Uuid
+  updatedBy   User?    @relation("MatchUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  league    League       @relation(fields: [leagueId], references: [id])
+  matchday  Matchday     @relation(fields: [matchdayId], references: [id], onDelete: Cascade)
+  homeTeam  Team         @relation("MatchHome", fields: [homeTeamId], references: [id])
+  awayTeam  Team         @relation("MatchAway", fields: [awayTeamId], references: [id])
+  field     Field?       @relation("MatchField", fields: [fieldId], references: [id], onDelete: SetNull)
+  referee   User?        @relation("MatchReferee", fields: [refereeId], references: [id], onDelete: SetNull)
+  mvp       User?        @relation("MatchMvp", fields: [mvpUserId], references: [id], onDelete: SetNull)
+  events    MatchEvent[]
+  feedsInto Match?       @relation("MatchFeedsInto", fields: [knockoutFeedsIntoMatchId], references: [id], onDelete: SetNull)
+  fedBy     Match[]      @relation("MatchFeedsInto")
+
+  @@index([leagueId, matchdayId])
+  @@index([homeTeamId])
+  @@index([awayTeamId])
+  @@index([fieldId])
+  @@index([refereeId])
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([knockoutStage])
+  @@map("matches")
+}
+
+// A single action during a match: goal, assist, card, MVP, etc.
+// The user is the actor; teamId is the team responsible; for
+// SUBSTITUTION, secondaryUserId is the player coming IN. For
+// GOAL, secondaryUserId is the assister (when present).
+model MatchEvent {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  matchId         String    @map("match_id") @db.Uuid
+  // Minute of the match (0..120).
+  minute          Int
+  type            EventType
+  teamId          String    @map("team_id") @db.Uuid
+  userId          String    @map("user_id") @db.Uuid
+  secondaryUserId String?   @map("secondary_user_id") @db.Uuid
+  notes           String?
+
+  // ----- Audit columns (mandatory) -----
+  createdAt   DateTime @default(now()) @map("created_at")
+  createdById String?  @map("created_by") @db.Uuid
+  createdBy   User?    @relation("MatchEventCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  match         Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  team          Team  @relation(fields: [teamId], references: [id])
+  user          User  @relation("EventUser", fields: [userId], references: [id])
+  secondaryUser User? @relation("EventSecondaryUser", fields: [secondaryUserId], references: [id], onDelete: SetNull)
+
+  @@index([matchId])
+  @@index([userId])
+  @@index([teamId])
+  @@index([type])
+  @@index([minute])
+  @@map("match_events")
+}
+
+// =====================================================================
+// DOMAIN — Awards (v1.2, Fase C)
+//
+// A trophy/recognition handed to a User, optionally scoped to the League
+// and Team in which it was earned. Used by the player profile to show a
+// real trophy cabinet instead of mocks.
+// =====================================================================
+
+model Award {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String        @map("user_id") @db.Uuid
+  leagueId    String?       @map("league_id") @db.Uuid
+  teamId      String?       @map("team_id") @db.Uuid
+  category    AwardCategory
+  level       AwardLevel
+  title       String        @db.VarChar(120)
+  description String?       @db.VarChar(500)
+  awardedAt   DateTime      @map("awarded_at") @db.Date
+
+  // ----- Audit columns (mandatory) -----
+  createdAt   DateTime @default(now()) @map("created_at")
+  createdById String?  @map("created_by") @db.Uuid
+  createdBy   User?    @relation("AwardCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  updatedById String?  @map("updated_by") @db.Uuid
+  updatedBy   User?    @relation("AwardUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  deletedAt   DateTime? @map("deleted_at")
+
+  user   User    @relation("AwardWinner", fields: [userId], references: [id], onDelete: Cascade)
+  league League? @relation(fields: [leagueId], references: [id], onDelete: SetNull)
+  team   Team?   @relation(fields: [teamId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([leagueId])
+  @@index([teamId])
+  @@index([category])
+  @@index([level])
+  @@index([deletedAt])
+  @@map("awards")
+}

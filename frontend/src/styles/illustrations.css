@@ -1,0 +1,133 @@
+/* ============================================================
+ * Kaibil Football — illustrations & background utilities
+ * Pure CSS + data-URI SVG. No external assets required.
+ * ============================================================ */
+
+.kaibil-app .bg-halftone {
+  background-color: var(--color-bg);
+  background-image: radial-gradient(var(--color-ink) 1.2px, transparent 1.6px);
+  background-size: 12px 12px;
+  background-position: 0 0;
+}
+
+.kaibil-app .bg-halftone--yellow {
+  background-color: var(--color-vamos);
+  background-image: radial-gradient(var(--color-ink) 1.2px, transparent 1.6px);
+}
+
+.kaibil-app .bg-halftone--coral {
+  background-color: var(--color-coral);
+  background-image: radial-gradient(var(--color-ink) 1.2px, transparent 1.6px);
+}
+
+.kaibil-app .bg-halftone--dark {
+  background-color: var(--color-carbon);
+  background-image: radial-gradient(#FFFFFF26 1.2px, transparent 1.6px);
+}
+
+/* ---------- Diagonal stripes (warning / championship vibe) ---------- */
+
+.kaibil-app .bg-stripes {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--color-vamos) 0 20px,
+    var(--color-ink) 20px 22px
+  );
+}
+
+.kaibil-app .bg-stripes--magenta {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--color-magenta) 0 20px,
+    var(--color-ink) 20px 22px
+  );
+}
+
+/* ---------- Radial spotlight (gradient into flat color) ---------- */
+
+.kaibil-app .bg-spotlight {
+  background:
+    radial-gradient(circle at 30% 30%, var(--color-vamos) 0%, transparent 60%),
+    var(--color-bg);
+}
+
+/* ---------- Inline SVG icons (use as background-image or <img>) ---------- */
+
+.kaibil-app .icon {
+  display: inline-block;
+  width: 1.5em;
+  height: 1.5em;
+  vertical-align: -0.25em;
+  fill: currentColor;
+}
+
+/* ---------- Card corner badge (esquina tipo holograma) ---------- */
+
+.kaibil-app .corner-badge {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  width: 56px;
+  height: 56px;
+  background: var(--color-ink);
+  color: var(--color-vamos);
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+  transform: rotate(-12deg);
+}
+
+/* ---------- Halftone SVG (decorative overlay) ---------- */
+
+.kaibil-app .halftone-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.25;
+  background-image: radial-gradient(var(--color-ink) 2px, transparent 2.4px);
+  background-size: 16px 16px;
+  -webkit-mask-image: linear-gradient(135deg, black 30%, transparent 80%);
+          mask-image: linear-gradient(135deg, black 30%, transparent 80%);
+}
+
+.kaibil-app .halftone-overlay--light {
+  background-image: radial-gradient(#FFFFFF 2px, transparent 2.4px);
+}
+
+/* ---------- "Stickered" decorative shapes ---------- */
+
+.kaibil-app .sticker {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: var(--color-ink);
+  color: var(--color-vamos);
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: var(--text-xs);
+  border-radius: 4px;
+  transform: rotate(-3deg);
+  box-shadow: 2px 2px 0 var(--color-coral);
+}
+
+/* ---------- Scanline (esports CRT vibe, subtle) ---------- */
+
+.kaibil-app .scanlines {
+  position: relative;
+  overflow: hidden;
+}
+.kaibil-app .scanlines::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.03) 0 1px,
+    transparent 1px 3px
+  );
+  mix-blend-mode: overlay;
+}

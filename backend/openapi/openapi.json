@@ -732,6 +732,181 @@
     }
   },
   "paths": {
+    "/api/v1/users": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "List / search users (admin only)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Free-text search over names, email and nickname."
+          },
+          {
+            "in": "query",
+            "name": "role",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ADMIN",
+                "REFEREE",
+                "TECHNICAL_DIRECTOR",
+                "ASSISTANT",
+                "PLAYER"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of users."
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Create a user (admin only)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "firstName",
+                  "paternalSurname",
+                  "maternalSurname",
+                  "birthDate",
+                  "role",
+                  "phoneNumber",
+                  "email",
+                  "curp",
+                  "password"
+                ],
+                "properties": {
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "paternalSurname": {
+                    "type": "string"
+                  },
+                  "maternalSurname": {
+                    "type": "string"
+                  },
+                  "birthDate": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "ADMIN",
+                      "REFEREE",
+                      "TECHNICAL_DIRECTOR",
+                      "ASSISTANT",
+                      "PLAYER"
+                    ]
+                  },
+                  "nickname": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "phoneNumber": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "curp": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 8
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SuccessEnvelope"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/User"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
     "/api/v1/users/me": {
       "get": {
         "tags": [
@@ -871,6 +1046,152 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update a user (admin only)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "paternalSurname": {
+                    "type": "string"
+                  },
+                  "maternalSurname": {
+                    "type": "string"
+                  },
+                  "birthDate": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "ADMIN",
+                      "REFEREE",
+                      "TECHNICAL_DIRECTOR",
+                      "ASSISTANT",
+                      "PLAYER"
+                    ]
+                  },
+                  "nickname": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "phoneNumber": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "curp": {
+                    "type": "string"
+                  },
+                  "isActive": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SuccessEnvelope"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/User"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Soft-delete a user (admin only)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User soft-deleted."
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
@@ -1089,6 +1410,1064 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/v1/teams": {
+      "get": {
+        "tags": [
+          "Teams"
+        ],
+        "summary": "List teams",
+        "description": "Returns active (non-soft-deleted) teams. Optionally filtered by league.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "leagueId",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of teams."
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Teams"
+        ],
+        "summary": "Create a team",
+        "description": "**ADMIN only.** Optionally enrolls the team in a league (adds a LeagueTeam entry).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTeamRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Team created."
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{id}": {
+      "get": {
+        "tags": [
+          "Teams"
+        ],
+        "summary": "Get a team by id (with members)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Team with members."
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Teams"
+        ],
+        "summary": "Update a team",
+        "description": "**ADMIN only.** Partial update.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated team."
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Teams"
+        ],
+        "summary": "Soft-delete a team",
+        "description": "**ADMIN only.**",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted."
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{id}/members": {
+      "get": {
+        "tags": [
+          "Teams"
+        ],
+        "summary": "Get team members",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of team members (player/staff)."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Teams"
+        ],
+        "summary": "Add a member to a team roster",
+        "description": "**ADMIN only.** `jerseyNumber` and `position` apply only to PLAYER memberships.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Membership created."
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "description": "User is already a member."
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{id}/members/{userId}": {
+      "patch": {
+        "tags": [
+          "Teams"
+        ],
+        "summary": "Update a roster membership",
+        "description": "**ADMIN only.**",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated membership."
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Teams"
+        ],
+        "summary": "Remove a member from a team roster",
+        "description": "**ADMIN only.** Hard deletes the membership row.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Removed."
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/v1/leagues/{id}/stats": {
+      "get": {
+        "tags": [
+          "Stats"
+        ],
+        "summary": "League leaderboards + highlights",
+        "description": "Returns top scorers, top assisters, MVPs, fair play, and league highlights (top scorer, best GK, best attack, best defense).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Leaderboards + highlights."
+          }
+        }
+      }
+    },
+    "/api/v1/leagues/{id}/standings": {
+      "get": {
+        "tags": [
+          "Standings"
+        ],
+        "summary": "Compute standings for a league",
+        "description": "Returns the league table ordered by points (desc), then goal difference, goals for, fair play. Uses only COMPLETED matches.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Standings with overall and per-group arrays."
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}/profile": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Full player profile bundle (teams, stats, matches, awards, career)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profile bundle."
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}/teams": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Teams (with membership info) the user belongs to",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Team memberships."
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}/stats": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Aggregated player stats across leagues",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Player stats."
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}/stats/by-league": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Per-league player stats (one row per league the user played in)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Per-league player stats."
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}/matches": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Recent completed matches for the user (default limit 4)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 4
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recent matches."
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/v1/users/{id}/awards": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Awards won by the user",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Awards."
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/v1/referees/{id}/stats": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Aggregated referee stats",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Referee stats."
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/v1/referees/{id}/matches": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "summary": "Recent matches officiated by the referee (default limit 5)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 5
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recent matches."
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/v1/matches": {
+      "get": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "List matches",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "leagueId",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "matchdayId",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of matches with embedded homeTeam/awayTeam."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "Create a match",
+        "description": "**ADMIN only.** The matchday must belong to the given league.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Match created."
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/api/v1/matches/{id}": {
+      "get": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "Get a match by id",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Match with embedded homeTeam/awayTeam."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "Update a match",
+        "description": "**ADMIN only.** Partial update (schedule, teams, field, referee, notes, knockout).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated match."
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "Delete a match",
+        "description": "**ADMIN only.** Hard delete; match events cascade.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted."
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/v1/leagues/{id}/matchdays": {
+      "get": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "List matchdays of a league",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of matchdays ordered by number."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "Add a matchday to a league",
+        "description": "**ADMIN only.** `number` defaults to the next free slot.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Matchday created."
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "description": "`MATCHDAY_EXISTS`."
+          }
+        }
+      }
+    },
+    "/api/v1/matchdays/{id}": {
+      "get": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "Get a matchday by id",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matchday."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "Update a matchday",
+        "description": "**ADMIN only.** Edit `number`, `date` and/or `status`.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated matchday."
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "`MATCHDAY_EXISTS`."
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "Delete a matchday",
+        "description": "**ADMIN only.** Cascades its scheduled matches. Fails with `MATCHDAY_IN_PLAY` if any match is played.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted."
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "`MATCHDAY_IN_PLAY`."
+          }
+        }
+      }
+    },
+    "/api/v1/matches/{id}/score": {
+      "patch": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "Set the final score of a match",
+        "description": "**ADMIN only.** Optionally flips status (e.g. to COMPLETED) in the same call.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetMatchScoreRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated match."
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/v1/matches/{id}/status": {
+      "patch": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "Change the status of a match",
+        "description": "**ADMIN only.**",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated match."
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       }
@@ -1397,6 +2776,439 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/v1/leagues/{id}/teams": {
+      "get": {
+        "tags": [
+          "Leagues"
+        ],
+        "summary": "List teams assigned to a league",
+        "description": "Returns all teams in the league, ordered by seed, with their members.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of teams with members and seed."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Leagues"
+        ],
+        "summary": "Enroll a team in a league",
+        "description": "**ADMIN only.** Adds a LeagueTeam row. `seed` defaults to the next free slot.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "teamId"
+                ],
+                "properties": {
+                  "teamId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "seed": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "groupLabel": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 5
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Team enrolled."
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "`TEAM_ALREADY_ENROLLED`."
+          }
+        }
+      }
+    },
+    "/api/v1/leagues/{id}/fixture/generate": {
+      "post": {
+        "tags": [
+          "Leagues"
+        ],
+        "summary": "Generate the round-robin fixture",
+        "description": "**ADMIN only.** Replaces any existing fixture (matchdays + matches) with a\nfresh Berger round-robin. Honors `league.homeAndAway` (single vs double\nround) and `league.dayOfWeek` / `league.timeSlot` for scheduling.\nFails with `FIXTURE_IN_PLAY` if the league already has played matches\nunless `force=true`.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateFixtureRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Fixture generated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SuccessEnvelope"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "matchdayCount": {
+                              "type": "integer"
+                            },
+                            "matchCount": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "`FIXTURE_IN_PLAY` — already has played matches.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/leagues/{id}/knockout/generate": {
+      "post": {
+        "tags": [
+          "Leagues"
+        ],
+        "summary": "Generate the knockout bracket",
+        "description": "**ADMIN only.** Builds an 8-team single-elimination bracket from the\ncurrent standings (seed order when no matches have been played).\nFails with `KNOCKOUT_EXISTS` if a bracket already exists unless `force=true`.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateKnockoutRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bracket generated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SuccessEnvelope"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "quarters": {
+                              "type": "integer"
+                            },
+                            "semis": {
+                              "type": "integer"
+                            },
+                            "final": {
+                              "type": "integer"
+                            },
+                            "thirdPlace": {
+                              "type": "integer"
+                            },
+                            "matchdayId": {
+                              "type": "string",
+                              "format": "uuid"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "`KNOCKOUT_EXISTS` — bracket already present.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/leagues/{id}/teams/{teamId}": {
+      "patch": {
+        "tags": [
+          "Leagues"
+        ],
+        "summary": "Reorder / regroup a league enrollment",
+        "description": "**ADMIN only.** Updates `seed` and/or `groupLabel`.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "path",
+            "name": "teamId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "seed": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "groupLabel": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 5
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Enrollment updated."
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "`ENROLLMENT_NOT_FOUND`."
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Leagues"
+        ],
+        "summary": "Remove a team from a league",
+        "description": "**ADMIN only.** Deletes the LeagueTeam row.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "path",
+            "name": "teamId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Enrollment removed."
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "description": "`ENROLLMENT_NOT_FOUND`."
+          }
+        }
+      }
+    },
+    "/api/v1/leagues/{id}/knockout": {
+      "get": {
+        "tags": [
+          "Knockout"
+        ],
+        "summary": "Get knockout bracket for a league",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bracket with quarters, semis, final, third place, and champion."
           }
         }
       }
@@ -1711,6 +3523,282 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/v1/matches/{matchId}/events": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "List events for a match",
+        "description": "Returns all events (goals, assists, cards, MVP) for a match, ordered by minute.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "matchId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of match events."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Add an event to a match",
+        "description": "**ADMIN only.** GOAL events recompute the match scoreboard automatically. MVP events set the match MVP.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "matchId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Event created."
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/api/v1/events/{id}": {
+      "patch": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Update a match event",
+        "description": "**ADMIN only.**",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated event."
+          },
+          "400": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Events"
+        ],
+        "summary": "Delete a match event",
+        "description": "**ADMIN only.** Deleting a GOAL recomputes the scoreboard.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted."
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/awards": {
+      "get": {
+        "tags": [
+          "Awards"
+        ],
+        "summary": "List awards (optionally filtered by user, league or category)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "userId",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "leagueId",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "category",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "SCORER",
+                "MVP",
+                "FAIR_PLAY",
+                "CHAMPION",
+                "BEST_DEFENSE"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of awards"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Awards"
+        ],
+        "summary": "Create an award (admin)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Award created"
+          },
+          "403": {
+            "description": "Insufficient permissions"
+          }
+        }
+      }
+    },
+    "/awards/{id}": {
+      "patch": {
+        "tags": [
+          "Awards"
+        ],
+        "summary": "Update an award (admin)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Award updated"
+          },
+          "404": {
+            "description": "Award not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Awards"
+        ],
+        "summary": "Soft-delete an award (admin)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Award deleted"
+          }
+        }
+      }
+    },
+    "/leagues/{id}/awards/seed": {
+      "post": {
+        "tags": [
+          "Awards"
+        ],
+        "summary": "Auto-generate awards for a league (champion, scorers, MVP, fair play)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Awards generated"
+          },
+          "409": {
+            "description": "League already has awards"
           }
         }
       }

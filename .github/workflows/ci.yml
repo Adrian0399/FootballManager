@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev, uat, prod, 'feat/**']
+  pull_request:
+    branches: [main, dev, uat, prod]
+
+# Cancels an in-flight run when the same branch gets a new push.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Lint, typecheck, build y tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm -r run typecheck
+
+      - name: Build
+        run: pnpm -r run build
+
+      - name: Tests unitarios
+        run: pnpm --filter backend run test
+
+      - name: OpenAPI sincronizado
+        run: |
+          cd backend
+          pnpm docs:export
+          if ! git diff --quiet -- openapi/openapi.json; then
+            echo "::error::openapi/openapi.json esta desactualizado. Ejecuta 'pnpm docs:export' y commitea el resultado."
+            exit 1
+          fi
+
+      - name: Build de UAT (verifica que el modo uat compila)
+        run: pnpm --filter frontend run build:uat
+
+      - name: Subir artefactos de build
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist-${{ github.sha }}
+          path: frontend/dist
+          retention-days: 7
+          if-no-files-found: error

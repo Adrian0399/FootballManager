@@ -1,12 +1,18 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, __dirname, '');
+  return {
   plugins: [react()],
+  // Public base path. Empty for local dev and for hosts that serve the app
+  // at the domain root; set it to "/<repo>/" when publishing to GitHub
+  // Pages (e.g. VITE_BASE_PATH=/FootballManager/).
+  base: env.VITE_BASE_PATH ?? '/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -36,4 +42,5 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
-}));
+  };
+});

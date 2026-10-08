@@ -92,7 +92,7 @@ function PublicOnly({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-export const router = createBrowserRouter([
+const ROUTES = [
   { path: '/', element: <Navigate to="/dashboard" replace /> },
   // Design system playground — previsualiza tokens sin tocar páginas reales.
   {
@@ -265,4 +265,11 @@ export const router = createBrowserRouter([
     ],
   },
   { path: '*', element: <Navigate to="/404" replace /> },
-]);
+];
+
+export const router = createBrowserRouter(ROUTES, {
+  // Mounts the router under the app's public base path so it works both at
+  // the domain root and under a GitHub Pages project subpath
+  // (e.g. /FootballManager/), which sets VITE_BASE_PATH.
+  basename: import.meta.env.BASE_URL.replace(/\/$/, ''),
+});

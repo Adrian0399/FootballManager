@@ -99,12 +99,32 @@ Si algo falla, el PR no se puede mergear.
 
 React compilado es estático, así que **GitHub Pages lo sirve sin costo**.
 
-Configura en **Settings → Pages → Source: GitHub Actions** (necesita un
-workflow propio que publique `frontend/dist`).
+**Dos detalles obligatorios al publicar en un subdirectorio** (`/FootballManager/`):
 
-> Para que funcione, el frontend usa rutas relativas al dominio; hay que
-> configurar el `base` de Vite si el proyecto se publica en un subdirectorio
-> (`/FootballManager/`).
+1. **Base path.** Compila con `VITE_BASE_PATH=/FootballManager/ pnpm build`.
+   Sin esto, los assets se piden desde `/assets/...` y dan 404.
+
+2. **Fallback SPA.** GitHub Pages no reescribe rutas: si alguien abre
+   `/FootballManager/dashboard` directamente, el servidor devuelve 404 en vez
+   de `index.html`. La solución es que `dist/404.html` sea una copia de
+   `index.html`, para que el navegador lo cargue y React Router resuelva la
+   ruta en el cliente.
+
+   En el workflow de Pages, tras el build:
+
+   ```bash
+   cp dist/index.html dist/404.html
+   ```
+
+   ⚠️ Con `base` configurado, `404.html` debe además redirigir a la ruta
+   correcta; revisa que el `<base>` o las rutas absolutas funcionen.
+
+El backend ya expone todo lo necesario: `vite.config.ts` lee `VITE_BASE_PATH`
+y el router usa `import.meta.env.BASE_URL` como `basename`, así que el mismo
+código funciona en la raíz del dominio y en un subdirectorio.
+
+> En un host con rewrite configurable (Netlify, Vercel, Nginx) esto no hace
+> falta: basta con servir `index.html` para cualquier ruta desconocida.
 
 ### Backend — GitHub Pages ❌
 

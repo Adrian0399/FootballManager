@@ -57,7 +57,12 @@ export function TeamDetailPage() {
         .map((t) => t.id),
     [myTeamsQuery.data],
   );
-    isAdmin || myManagedTeamIds.includes(id);
+  /**
+   * Whether the current user may manage this team's roster.
+   * Unused for now (the buttons are always shown) but kept explicit so
+   * the check is ready to be wired instead of sitting as dead code.
+   */
+  const canManageMembers = isAdmin || myManagedTeamIds.includes(id);
 
   // Bucket the memberships by role. The backend already flattens the user
   // name into each member row (`TeamMemberPublic`), so no user lookup needed.

@@ -4,6 +4,7 @@ import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { Chip } from '../ui/Chip';
 import { TrophyIcon, FieldIcon } from '../icons';
+import { MatchBanner } from '../MatchBanner';
 import { useLeagues, useTeams } from '../../hooks/teams';
 import { apiClient } from '../../api/axios';
 import type { SuccessEnvelope } from '../../types/user';
@@ -44,9 +45,16 @@ function useMergedCompletedMatches(leagues: Array<{ id: string }>) {
     )
       .then((groups) => {
         if (cancelled) return;
-        const all = groups.flat().sort((a, b) => b.scheduledAt.localeCompare(a.scheduledAt));
-        setTotal(all.length);
-        setMatches(all.slice(0, 5));
+        // A match can be flagged COMPLETED while its kickoff date is still
+        // in the future (the seed does this). Those are not "últimos
+        // partidos finalizados", so drop them before sorting.
+        const now = new Date().toISOString();
+        const played = groups
+          .flat()
+          .filter((m) => m.status === 'COMPLETED' && m.scheduledAt <= now)
+          .sort((a, b) => b.scheduledAt.localeCompare(a.scheduledAt));
+        setTotal(played.length);
+        setMatches(played.slice(0, 5));
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
@@ -171,22 +179,9 @@ export function DashboardAdmin({ userFullName }: DashboardAdminProps) {
       <Card>
         <h3 style={{ fontSize: 'var(--text-lg)' }}>Últimos partidos finalizados</h3>
         {recentMatches.length > 0 ? (
-          <ul className="staff-list">
+          <ul className="match-banner-list">
             {recentMatches.map((m) => (
-              <li key={m.id} className="staff-list__row">
-                <div className="staff-list__body">
-                  <span className="staff-list__name">
-                    <Link to={`/matches/${m.id}`}>
-                      {m.homeTeam?.shortName ?? '?'} {m.homeScore} - {m.awayScore}{' '}
-                      {m.awayTeam?.shortName ?? '?'}
-                    </Link>
-                  </span>
-                  <span className="staff-list__role">
-                    {m.scheduledAt.slice(0, 10)}
-                  </span>
-                </div>
-                <Chip tone="success">Finalizado</Chip>
-              </li>
+              <MatchBanner key={m.id} match={m} />
             ))}
           </ul>
         ) : (

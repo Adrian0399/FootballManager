@@ -62,6 +62,9 @@ const RefereeProfilePage = lazy(() =>
 const UsersPage = lazy(() =>
   import('./pages/UsersPage').then((m) => ({ default: m.UsersPage })),
 );
+const AuditPage = lazy(() =>
+  import('./pages/AuditPage').then((m) => ({ default: m.AuditPage })),
+);
 const NotFoundPage = lazy(() =>
   import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 );
@@ -235,6 +238,14 @@ const ROUTES = [
         element: (
           <Shell>
             <UsersPage />
+          </Shell>
+        ),
+      },
+      {
+        path: '/audit',
+        element: (
+          <Shell>
+            <AuditPage />
           </Shell>
         ),
       },

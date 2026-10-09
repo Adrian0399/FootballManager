@@ -23,6 +23,8 @@ import { statsRouter } from './modules/stats/stats.routes.js';
 import { knockoutRouter } from './modules/knockout/knockout.routes.js';
 import { profileRouter } from './modules/profile/profile.routes.js';
 import { awardsRouter } from './modules/awards/awards.routes.js';
+import { auditRouter } from './modules/audit/audit.routes.js';
+import { auditLogger } from './shared/middlewares/audit.middleware.js';
 
 export function buildApp(): express.Express {
   const app = express();
@@ -36,6 +38,8 @@ export function buildApp(): express.Express {
   );
   app.use(express.json({ limit: '1mb' }));
   app.use(cookieParser());
+  // Best-effort audit: records every POST/PUT/PATCH/DELETE on finish.
+  app.use(auditLogger);
 
   // Serve uploaded photos as static files.
   //
@@ -102,6 +106,7 @@ export function buildApp(): express.Express {
   app.use('/api/v1', profileRouter);
 
   app.use('/api/v1', awardsRouter);
+  app.use('/api/v1', auditRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

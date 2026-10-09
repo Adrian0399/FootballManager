@@ -41,6 +41,7 @@ export function Header() {
           <Link to="/teams">Equipos</Link>
           <Link to="/fields">Canchas</Link>
           {user.role === 'ADMIN' && <Link to="/users">Usuarios</Link>}
+          {user.role === 'ADMIN' && <Link to="/audit">Monitoreo</Link>}
           <Link to="/profile">Profile</Link>
 
           <span className="app-header__user">

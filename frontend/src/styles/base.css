@@ -3651,3 +3651,51 @@
     flex-direction: row;
   }
 }
+
+/* ============================================================
+ * AUDIT CHART
+ * CSS-only bar chart, neobrutalist: thick border on the canvas and
+ * solid bars. No charting library needed.
+ * ============================================================ */
+
+.kaibil-app .audit-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 160px;
+  padding: var(--space-3) var(--space-2) var(--space-2);
+  background: var(--color-row);
+  border: var(--border-thin);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+}
+
+.kaibil-app .audit-chart__col {
+  flex: 1 0 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 14px;
+}
+
+.kaibil-app .audit-chart__bar-wrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.kaibil-app .audit-chart__bar {
+  width: 100%;
+  min-height: 2px;
+  background: var(--color-cyan);
+  border: 1px solid var(--color-ink);
+  border-radius: 2px 2px 0 0;
+}
+
+.kaibil-app .audit-chart__label {
+  font-size: 0.55rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}

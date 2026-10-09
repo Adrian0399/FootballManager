@@ -637,3 +637,24 @@ model Award {
   @@index([deletedAt])
   @@map("awards")
 }
+
+// ---------------------------------------------------------------------------
+// AuditLog — append-only record of every mutating request (POST/PUT/PATCH/
+// DELETE) and auth events. Feeds the admin monitoring dashboard.
+// ---------------------------------------------------------------------------
+model AuditLog {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid
+  method     String   @map("method")
+  path       String   @map("path")
+  action     String   @map("action")
+  statusCode Int      @map("status_code")
+  ip         String?  @map("ip")
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([userId])
+  @@index([action])
+  @@map("audit_logs")
+}

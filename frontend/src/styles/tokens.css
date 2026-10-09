@@ -88,6 +88,11 @@
   --ease-snap:   cubic-bezier(0.5, 1.5, 0.5, 1);
   --ease-pop:    cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  /* Hover travel only. `--ease-pop` overshoots (control point 1.56), so a
+     2px lift ends up at 2.19px and eases back — which reads as a flicker
+     when the cursor rests on a button. This curve reaches the target and
+     stops, keeping the "lift" feel without the wobble. */
+  --ease-hover:  cubic-bezier(0.25, 0.9, 0.35, 1);
   --duration-fast: 120ms;
   --duration-base: 200ms;
   --duration-slow: 320ms;
@@ -95,6 +100,49 @@
   /* ---------- Layout ---------- */
   --container-max: 1200px;
   --header-height: 80px;
+
+  /* ---------- Semantic surfaces ----------
+   * Tinted backgrounds used by banners, pills and disabled states.
+   * They live here (not hardcoded) so the dark theme can re-tint them. */
+  --surface-muted:     #ECECEC;
+  --surface-danger:    #FFE4E8;
+  --surface-success:   #D6FBE3;
+  --surface-warning:   #FFF1D8;
+  --text-on-success:   #0F6B3D;
+  --text-on-dark-soft: #06351E;
+
+  /* Rows, panels and other fills that sit ON the canvas. Kept separate
+     from --color-bg so switching theme only re-frames the page: these
+     surfaces keep the same cream in light and dark. */
+  --color-row: #FFF8E7;
+}
+
+/* ============================================================
+ * DARK THEME
+ * Applied via <html data-theme="dark"> (set by useTheme).
+ *
+ * The neobrutalist look depends on thick borders and hard offset
+ * shadows. Both are built on --color-ink, so flipping that single
+ * token to a light value keeps every border and shadow visible on
+ * a dark canvas — no per-component overrides needed.
+ * ============================================================ */
+/* ============================================================
+ * DARK THEME
+ * Applied via <html data-theme="dark"> (set by useTheme).
+ *
+ * Deliberately minimal: ONLY the page canvas changes. Every component
+ * (buttons, cards, header, tables, banners, medals) keeps exactly the
+ * same colors, borders and shadows it has in the light theme, so
+ * toggling never restyles the product — it only re-frames it.
+ * ============================================================ */
+[data-theme='dark'] {
+  --color-bg: #55565C;
+}
+
+  /* Brand accents stay identical — they are the identity of the brand
+     and they already read well on dark. Only --color-vamos needs a
+     slight lift to keep its contrast against the dark canvas. */
+  --color-vamos: #FFE600;
 }
 
 /* Respect users who prefer less motion */

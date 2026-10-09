@@ -8,6 +8,11 @@ import './styles/global.css';
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/illustrations.css';
+import { bootstrapTheme } from './hooks/useTheme';
+
+// Apply the saved theme before the first paint, otherwise a dark-theme
+// user would see a flash of the light background while React mounts.
+bootstrapTheme();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { apiClient } from '../api/axios';
 import { useAuthStore } from '../store/auth.store';
 import { BallIcon } from './icons';
+import { ThemeToggle } from './ThemeToggle';
 import { roleLabel } from '../utils/roleChip';
 import { Button } from './ui/Button';
 import { Chip } from './ui/Chip';
@@ -73,6 +74,8 @@ export function Header() {
               {roleLabel(user.role)}
             </Chip>
           </span>
+
+          <ThemeToggle />
 
           <Button size="sm" variant="coral" onClick={handleLogout}>
             Salir

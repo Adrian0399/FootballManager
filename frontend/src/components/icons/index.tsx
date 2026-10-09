@@ -172,3 +172,34 @@ export function PlayerKickIllustration(props: IconProps) {
     </svg>
   );
 }
+
+/**
+ * Sun / moon pair for the theme toggle.
+ * They follow the same rule as the rest of the icon set: `currentColor`
+ * and CSS variables only, so they re-theme automatically.
+ */
+
+/** Shown when the app is in light mode (click to go dark). */
+export function SunIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <circle cx="12" cy="12" r="4.5" fill="currentColor" stroke="none" />
+      <g stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8" />
+      </g>
+    </svg>
+  );
+}
+
+/** Shown when the app is in dark mode (click to go light). */
+export function MoonIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <path
+        d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11Z"
+        fill="currentColor"
+        stroke="none"
+      />
+    </svg>
+  );
+}

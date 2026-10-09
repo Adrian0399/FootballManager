@@ -43,23 +43,29 @@ export function useAvailableTeams(
     () => `available:${leagueId ?? ''}:${search ?? ''}`,
     [leagueId, search],
   );
-  const loader = (_k: string) => {
-    if (!leagueId) return asyncResolve([] as Team[]);
-    // Local fallback: we still use the mock for the "available teams"
-    // list because the backend doesn't expose an unassigned-by-league
-    // endpoint yet. The TeamPicker just needs a list of teams NOT
-    // already in the league, so this works until we wire it to the
-    // backend in v1.1.
-    const assigned = new Set(
-      getLeagueTeamsByLeague(leagueId).map((lt) => lt.teamId),
-    );
-    const available = MOCK_TEAMS.filter((t: Team) => !assigned.has(t.id));
-    if (!search) return asyncResolve(available);
+  const loader = async (_k: string) => {
+    if (!leagueId) return [] as Team[];
+    // Real teams from the API, minus the ones already enrolled in this
+    // league (GET /leagues/:id/teams). Filtering against the mock catalog
+    // returned ids that no longer exist once the backend seeded real data.
+    const [allTeams, enrolled] = await Promise.all([
+      apiClient
+        .get<SuccessEnvelope<Team[]>>('/teams')
+        .then((r) => r.data.data)
+        .catch(() => [] as Team[]),
+      apiClient
+        .get<SuccessEnvelope<Array<{ id: string }>>>(
+          `/leagues/${leagueId}/teams`,
+        )
+        .then((r) => r.data.data)
+        .catch(() => [] as Array<{ id: string }>),
+    ]);
+    const assigned = new Set(enrolled.map((t) => t.id));
+    const available = allTeams.filter((t) => !assigned.has(t.id));
+    if (!search) return available;
     const needle = search.toLowerCase();
-    return asyncResolve(
-      available.filter((t) =>
-        `${t.name} ${t.shortName} ${t.emoji}`.toLowerCase().includes(needle),
-      ),
+    return available.filter((t) =>
+      `${t.name} ${t.shortName} ${t.emoji}`.toLowerCase().includes(needle),
     );
   };
   return useAsync<Team[]>(loader, key);

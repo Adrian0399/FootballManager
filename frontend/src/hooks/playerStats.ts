@@ -65,12 +65,25 @@ export function useLeagueLeaderboards(
             const d = r.data.data;
             // The backend returns entries without `label`. The frontend
             // computes it from the value + secondary.
-            const addLabel = (e: { rank: number; playerId: string; teamId: string; value: number; secondary: number }, suffix: string): LeaderboardEntry => ({
+            // The backend already resolves playerName / teamName (v1.2);
+            // keep a readable fallback but never fall back to the raw id.
+            const addLabel = (
+              e: {
+                rank: number;
+                playerId: string;
+                playerName?: string;
+                teamId: string;
+                teamName?: string;
+                value: number;
+                secondary: number;
+              },
+              suffix: string,
+            ): LeaderboardEntry => ({
               rank: e.rank,
               playerId: e.playerId,
-              playerName: e.playerId, // backend doesn't return playerName; use ID as fallback
+              playerName: e.playerName || 'Jugador',
               teamId: e.teamId,
-              teamName: e.teamId, // backend doesn't return teamName; use ID as fallback
+              teamName: e.teamName || '—',
               value: e.value,
               secondary: e.secondary,
               label: `${e.value} ${suffix}`,

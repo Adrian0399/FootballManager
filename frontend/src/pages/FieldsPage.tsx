@@ -113,9 +113,6 @@ export function FieldsPage() {
                 {f.address && <span>📍 {f.address}</span>}
                 {f.capacity !== null && <span>👥 Capacidad: {f.capacity}</span>}
                 {f.description && <span>{f.description}</span>}
-                <span className="muted" style={{ fontSize: 'var(--text-xs)' }}>
-                  ID: <code className="mono">{f.id}</code>
-                </span>
               </div>
               {isAdmin && (
                 <div className="collection-card__actions">

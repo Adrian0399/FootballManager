@@ -18,6 +18,12 @@ interface TeamPickerProps {
   onChange: (next: LeagueTeam[]) => void;
   /** Whether the picker is editable. False = read-only. */
   readOnly?: boolean;
+  /**
+   * Catalog of real teams (id → Team), used to resolve the names of the
+   * already-assigned teams. Without it the picker falls back to the mock
+   * dataset, which no longer matches the ids the backend returns.
+   */
+  teams?: Team[];
 }
 
 /**
@@ -42,10 +48,21 @@ export function TeamPicker({
   maxTeams,
   onChange,
   readOnly = false,
+  teams,
 }: TeamPickerProps) {
   const [search, setSearch] = useState('');
   const availableQuery = useAvailableTeams(leagueId, search);
   const available: Team[] = availableQuery.data ?? [];
+
+  // Resolve the display data of the already-assigned teams. The parent may
+  // pass the real catalog; otherwise fall back to the available list (which
+  // is empty for assigned teams) so we never render a stale mock id.
+  const teamById = useMemo(() => {
+    const map = new Map<string, Team>();
+    for (const t of teams ?? []) map.set(t.id, t);
+    for (const t of available) map.set(t.id, t);
+    return map;
+  }, [teams, available]);
   const isLoadingAvailable = availableQuery.isLoading;
 
   // Track which team is being dragged across panes.
@@ -273,7 +290,7 @@ export function TeamPicker({
               </p>
             )}
             {assigned.map((lt, idx) => {
-              const team = MOCK_TEAM_BY_ID[lt.teamId];
+              const team = teamById.get(lt.teamId);
               if (!team) {
                 return (
                   <div
@@ -348,8 +365,4 @@ export function TeamPicker({
   );
 }
 
-// Local helper so we don't import the whole MOCK_TEAMS array here.
-import { MOCK_TEAMS } from '../mocks/teams';
-const MOCK_TEAM_BY_ID: Record<string, Team> = Object.fromEntries(
-  MOCK_TEAMS.map((t) => [t.id, t]),
-);
+

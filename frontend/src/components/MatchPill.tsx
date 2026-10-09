@@ -36,7 +36,9 @@ export function MatchPill({
 
   const score = formatScore(match);
   const time = formatTime(match.scheduledAt);
-  const field = match.fieldId ?? '—';
+  // The backend resolves the field name; fall back to an em dash only
+  // when the match has no field assigned (never render the raw id).
+  const field = match.field?.name ?? '—';
 
   return (
     <div
@@ -95,13 +97,12 @@ function formatTime(iso: string): string {
   return t || '';
 }
 
-function shortenField(fieldId: string): string {
-  // Real field names are long (e.g. "Complejo Norte — Cancha 1"). Show
-  // the trailing part after the last " — ".
-  if (fieldId === '—') return '—';
-  const idx = fieldId.lastIndexOf('—');
-  if (idx === -1) return fieldId;
-  return fieldId.slice(idx + 1).trim();
+/** Field names are long ("Complejo Norte — Cancha 1"); show the last part. */
+function shortenField(fieldName: string): string {
+  if (fieldName === '—') return '—';
+  const idx = fieldName.lastIndexOf('—');
+  if (idx === -1) return fieldName;
+  return fieldName.slice(idx + 1).trim();
 }
 
 function placeholderTeam(id: string) {

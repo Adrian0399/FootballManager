@@ -229,7 +229,9 @@ function MatchSummary({
           {match.scheduledAt.slice(0, 10)} · {match.scheduledAt.slice(11, 16)}
         </Chip>
         {match.fieldId && <Chip tone="ref">🏟 {match.fieldId}</Chip>}
-        {match.refereeId && <Chip tone="ref">Árbitro: {match.refereeId}</Chip>}
+        {match.referee?.fullName && (
+          <Chip tone="ref">Árbitro: {match.referee.fullName}</Chip>
+        )}
         {match.scoringMode && <Chip tone="default">Modo {match.scoringMode}</Chip>}
       </div>
       {match.notes && (

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useLeagueTeams } from '../hooks/leagueTeams';
-import { useLeague } from '../hooks/teams';
+import { useLeague, useTeams } from '../hooks/teams';
 import { leaguesApi } from '../api/leagues';
 import { useIsAdmin } from '../hooks/useIsAdmin';
 import { TeamPicker } from '../components/TeamPicker';
@@ -39,6 +39,8 @@ export function LeagueTeamsPage() {
   const isAdmin = useIsAdmin();
   const { data: league } = useLeague(id);
   const { data: serverAssignedRaw, refetch } = useLeagueTeams(id);
+  // Real team catalog, needed to render the names of the assigned teams.
+  const { data: allTeams } = useTeams();
   // Adapt to the existing local format (use id and seed from the public
   // shape, plus a synthesized membership for the TeamPicker).
   const serverAssigned = (serverAssignedRaw ?? []).map((t) => ({
@@ -165,6 +167,7 @@ export function LeagueTeamsPage() {
             setSaved(false);
           }}
           readOnly={!isAdmin}
+          teams={allTeams ?? []}
         />
       </Card>
 

@@ -43,9 +43,13 @@ export function Leaderboard({ title, category, entries, maxValue, emptyMessage }
       </h3>
       <ol className="leaderboard__list" role="list">
         {entries.map((e) => {
+          // Prefer the name resolved by the backend; the mock catalog is a
+          // last resort and the raw id is never shown to the user.
           const user = getUserById(e.playerId);
           const team = MOCK_TEAMS.find((t) => t.id === e.teamId);
-          const fullName = user ? `${user.firstName} ${user.paternalSurname}` : e.playerId;
+          const fullName =
+            e.playerName ||
+            (user ? `${user.firstName} ${user.paternalSurname}` : 'Jugador');
           const pct = max > 0 ? Math.round((e.value / max) * 100) : 0;
           return (
             <li key={`${e.playerId}-${e.rank}`} className="leaderboard__row">

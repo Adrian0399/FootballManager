@@ -74,6 +74,10 @@ export interface Match {
   knockoutPosition?: number | null;
   /** The winner of this match advances to this match. */
   knockoutFeedsIntoMatchId?: string | null;
+  /** Resolved by the backend so the UI never renders a raw UUID. */
+  referee?: { id: string; fullName: string } | null;
+  field?: { id: string; name: string } | null;
+  mvp?: { id: string; fullName: string } | null;
   /** Embedded team summaries returned by the backend list/detail (v1.1). */
   homeTeam?: MatchTeamSummary | null;
   awayTeam?: MatchTeamSummary | null;

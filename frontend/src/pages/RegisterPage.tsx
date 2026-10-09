@@ -6,7 +6,6 @@ import { apiClient } from '../api/axios';
 import { useAuthStore } from '../store/auth.store';
 import { registerSchema, type RegisterForm } from '../utils/validation';
 import {
-  USER_ROLES,
   type ErrorEnvelope,
   type SuccessEnvelope,
   type AuthPayload,
@@ -22,6 +21,9 @@ import { Banner } from '../components/ui/Banner';
 function toDateInputValue(isoDate: string): string {
   return isoDate.split('T')[0] ?? '';
 }
+
+/** Roles que el registro publico puede crear (ver validacion del backend). */
+const PUBLIC_REGISTER_ROLES: UserRole[] = ['PLAYER', 'ASSISTANT'];
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -135,9 +137,12 @@ export function RegisterPage() {
                   error={errors.role?.message}
                   {...register('role')}
                 >
-                  {USER_ROLES.map((r) => (
+                  {/* Self-registration cannot mint privileged roles:
+                      ADMIN / REFEREE / DT are provisioned by an admin
+                      from /users. The backend enforces this too. */}
+                  {PUBLIC_REGISTER_ROLES.map((r) => (
                     <option key={r} value={r}>
-                      {r}
+                      {r === 'PLAYER' ? 'Jugador' : r === 'ASSISTANT' ? 'Auxiliar' : r}
                     </option>
                   ))}
                 </Select>

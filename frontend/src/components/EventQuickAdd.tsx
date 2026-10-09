@@ -6,8 +6,6 @@ import { Banner } from './ui/Banner';
 import { Chip } from './ui/Chip';
 import { EVENT_LABEL, EVENT_TONE } from '../types/matchEvent';
 import type { MatchEventCreateInput, MatchEventType } from '../types/matchEvent';
-import { MOCK_TEAMS } from '../mocks/teams';
-import { MOCK_MEMBERSHIPS, MOCK_USERS } from '../mocks/teams';
 import type { MatchTeamSummary } from '../types/match';
 import type { TeamMemberPublic } from '../types/team';
 
@@ -68,9 +66,10 @@ export function EventQuickAdd({
 
   const teamSummary =
     teamId === homeTeamId ? homeTeam : teamId === awayTeamId ? awayTeam : null;
-  const fallbackTeam = MOCK_TEAMS.find((t) => t.id === teamId);
-  const teamShort = teamSummary?.shortName ?? fallbackTeam?.shortName;
-  const teamEmoji = teamSummary?.emoji ?? fallbackTeam?.emoji;
+  // Names always come from the resolved match payload — never from a
+  // catalog that no longer matches the ids the backend returns.
+  const teamShort = teamSummary?.shortName;
+  const teamEmoji = teamSummary?.emoji;
 
   const roster = useMemo(() => {
     if (rosterFor) {
@@ -81,21 +80,11 @@ export function EventQuickAdd({
         name: `${m.firstName} ${m.paternalSurname}`.trim(),
       }));
     }
-    return MOCK_MEMBERSHIPS
-      .filter((m) => m.teamId === teamId && m.membershipRole === 'PLAYER')
-      .map((m) => {
-        const u = MOCK_USERS.find((x) => x.id === m.userId);
-        return {
-          userId: m.userId,
-          jerseyNumber: m.jerseyNumber,
-          position: m.position,
-          name: u ? `${u.firstName} ${u.paternalSurname}` : m.userId,
-        };
-      });
+    return [];
   }, [rosterFor, teamId]);
 
-  const homeName = homeTeam?.name ?? MOCK_TEAMS.find((t) => t.id === homeTeamId)?.name ?? 'Local';
-  const awayName = awayTeam?.name ?? MOCK_TEAMS.find((t) => t.id === awayTeamId)?.name ?? 'Visita';
+  const homeName = homeTeam?.name ?? 'Local';
+  const awayName = awayTeam?.name ?? 'Visita';
 
   function submit() {
     setError(null);

@@ -103,8 +103,8 @@ export function MatchScoreboard({
         {match.scoringMode && (
           <Chip tone="default">Modo {match.scoringMode}</Chip>
         )}
-        {match.refereeId && (
-          <Chip tone="ref">Árbitro: {match.refereeId}</Chip>
+        {match.referee?.fullName && (
+          <Chip tone="ref">Árbitro: {match.referee.fullName}</Chip>
         )}
       </div>
     </div>

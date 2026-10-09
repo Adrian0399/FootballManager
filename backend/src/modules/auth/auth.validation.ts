@@ -17,7 +17,12 @@ export const registerSchema = z.object({
   birthDate: z.coerce.date().refine((d) => d < new Date(), 'birthDate must be in the past'),
   role: z
     .enum(['ADMIN', 'REFEREE', 'TECHNICAL_DIRECTOR', 'ASSISTANT', 'PLAYER'])
-    .default('PLAYER'),
+    .default('PLAYER')
+    // Self-registration may only create PLAYER/ASSISTANT accounts;
+    // privileged roles are provisioned by an ADMIN via POST /users.
+    .refine((r) => r === 'PLAYER' || r === 'ASSISTANT', {
+      message: 'El registro público solo permite crear Jugador o Auxiliar',
+    }),
   nickname: z.string().max(80).optional(),
   phoneNumber: phoneSchema,
   email: z.string().email().max(255),

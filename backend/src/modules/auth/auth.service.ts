@@ -62,7 +62,10 @@ export const authService = {
         maternalSurname: dto.maternalSurname,
         birthDate: dto.birthDate,
         age: calculateAge(dto.birthDate),
-        role: dto.role,
+        // Self-registration can never mint an administrator. Only an
+        // existing ADMIN creating the account (users.controller) may set
+        // a role; the public endpoint always lands on PLAYER.
+        role: creatorId ? dto.role : 'PLAYER',
         nickname: dto.nickname,
         phoneNumber: dto.phoneNumber,
         email: dto.email,

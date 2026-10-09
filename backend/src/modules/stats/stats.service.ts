@@ -57,6 +57,10 @@ export const statsService = {
 
     const teamNames = new Map(teams.map((t) => [t.id, t.name]));
 
+    // Player names: resolved in bulk so the leaderboards never expose a
+    // raw playerId. The ids come from the events loaded just below.
+    const playerNames = new Map<string, string>();
+
     // Aggregate per-player stats.
     const playerStats = new Map<string, {
       goals: number;
@@ -82,6 +86,18 @@ export const statsService = {
       const list = eventsByMatch.get(e.matchId) ?? [];
       list.push(e);
       eventsByMatch.set(e.matchId, list);
+    }
+
+    const playerIds = [...new Set(events.map((e) => e.userId).filter(Boolean))] as string[];
+    const players = await prisma.user.findMany({
+      where: { id: { in: playerIds } },
+      select: { id: true, firstName: true, paternalSurname: true, nickname: true },
+    });
+    for (const u of players) {
+      playerNames.set(
+        u.id,
+        (u.nickname ?? `${u.firstName} ${u.paternalSurname}`.trim()),
+      );
     }
 
     // Build player stats from events.
@@ -146,7 +162,7 @@ export const statsService = {
         goals.push({
           rank: 0,
           playerId: pid,
-          playerName: '', // filled below
+          playerName: playerNames.get(pid) ?? 'Jugador',
           teamId: ps.teamId,
           teamName: teamNames.get(ps.teamId) ?? ps.teamId,
           value: ps.goals,
@@ -164,7 +180,7 @@ export const statsService = {
         assists.push({
           rank: 0,
           playerId: pid,
-          playerName: '',
+          playerName: playerNames.get(pid) ?? 'Jugador',
           teamId: ps.teamId,
           teamName: teamNames.get(ps.teamId) ?? ps.teamId,
           value: ps.assists,
@@ -182,7 +198,7 @@ export const statsService = {
         mvps.push({
           rank: 0,
           playerId: pid,
-          playerName: '',
+          playerName: playerNames.get(pid) ?? 'Jugador',
           teamId: ps.teamId,
           teamName: teamNames.get(ps.teamId) ?? ps.teamId,
           value: ps.mvpCount,
@@ -201,7 +217,7 @@ export const statsService = {
         fairPlay.push({
           rank: 0,
           playerId: pid,
-          playerName: '',
+          playerName: playerNames.get(pid) ?? 'Jugador',
           teamId: ps.teamId,
           teamName: teamNames.get(ps.teamId) ?? ps.teamId,
           value: -cards, // negative so fewer cards = higher rank

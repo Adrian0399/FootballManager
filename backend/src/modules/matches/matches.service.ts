@@ -12,12 +12,62 @@ import type { MatchdayCreateDto, MatchdayUpdateDto } from '../leagues/leagues.va
 export type PublicMatch = Match & {
   homeTeam: Pick<Team, 'id' | 'name' | 'shortName' | 'emoji' | 'primaryColor' | 'secondaryColor'>;
   awayTeam: Pick<Team, 'id' | 'name' | 'shortName' | 'emoji' | 'primaryColor' | 'secondaryColor'>;
+  /** Resolved so the UI never has to render a raw referee UUID. */
+  referee: { id: string; fullName: string } | null;
+  /** Resolved so the UI never has to render a raw field UUID. */
+  field: { id: string; name: string } | null;
+  mvp: { id: string; fullName: string } | null;
 };
+
+/** Minimal user shape needed to label a referee or an MVP in the UI. */
+type PersonRef = { id: string; firstName: string; paternalSurname: string };
+type FieldRef = { id: string; name: string };
+type MatchWithRefs = Match & {
+  homeTeam: Team;
+  awayTeam: Team;
+  referee?: PersonRef | null;
+  field?: FieldRef | null;
+  mvpUser?: PersonRef | null;
+};
+
+function fullName(p: PersonRef | null | undefined): string {
+  return p ? `${p.firstName} ${p.paternalSurname}`.trim() : '';
+}
+
+/**
+ * `refereeId` and `mvpUserId` are plain columns with no Prisma relation, so
+ * the names are resolved in one extra query for the whole page instead of
+ * per match. The UI needs them: without them it renders a raw UUID.
+ */
+async function peopleById(ids: string[]): Promise<Map<string, PersonRef>> {
+  const unique = [...new Set(ids.filter(Boolean))];
+  if (unique.length === 0) return new Map();
+  const rows = await prisma.user.findMany({
+    where: { id: { in: unique } },
+    select: { id: true, firstName: true, paternalSurname: true },
+  });
+  return new Map(rows.map((r) => [r.id, r]));
+}
+
+/** Resolves referee / MVP for a page of matches with two extra queries. */
+async function decorate(matches: MatchWithRefs[]): Promise<PublicMatch[]> {
+  const people = await peopleById([
+    ...matches.map((m) => m.refereeId ?? ''),
+    ...matches.map((m) => m.mvpUserId ?? ''),
+  ]);
+  return matches.map((m) =>
+    toPublicMatch({
+      ...m,
+      referee: m.refereeId ? (people.get(m.refereeId) ?? null) : null,
+      mvpUser: m.mvpUserId ? (people.get(m.mvpUserId) ?? null) : null,
+    }),
+  );
+}
 
 export type PublicMatchday = Matchday;
 
-function toPublicMatch(m: Match & { homeTeam: Team; awayTeam: Team }): PublicMatch {
-  const { homeTeam, awayTeam, ...rest } = m;
+function toPublicMatch(m: MatchWithRefs): PublicMatch {
+  const { homeTeam, awayTeam, referee, field, mvpUser, ...rest } = m;
   return {
     ...rest,
     homeTeam: {
@@ -36,6 +86,9 @@ function toPublicMatch(m: Match & { homeTeam: Team; awayTeam: Team }): PublicMat
       primaryColor: awayTeam.primaryColor,
       secondaryColor: awayTeam.secondaryColor,
     },
+    referee: referee ? { id: referee.id, fullName: fullName(referee) } : null,
+    field: field ? { id: field.id, name: field.name } : null,
+    mvp: mvpUser ? { id: mvpUser.id, fullName: fullName(mvpUser) } : null,
   };
 }
 
@@ -44,28 +97,39 @@ function toPublicMatchday(md: Matchday): PublicMatchday {
 }
 
 export const matchesService = {
-  async findAll(filters: { leagueId?: string; matchdayId?: string }): Promise<PublicMatch[]> {
+  async findAll(filters: { leagueId?: string; matchdayId?: string; status?: string }): Promise<PublicMatch[]> {
     const where: Record<string, unknown> = {};
     if (filters.leagueId) where.leagueId = filters.leagueId;
     if (filters.matchdayId) where.matchdayId = filters.matchdayId;
+    // The dashboard asks for finished matches only; without this filter it
+    // sorted by date and returned the (scoreless) upcoming ones.
+    if (filters.status) where.status = filters.status;
 
     const matches = await prisma.match.findMany({
       where,
-      include: { homeTeam: true, awayTeam: true },
+      include: {
+        homeTeam: true,
+        awayTeam: true,
+        field: true,
+      },
       orderBy: [{ scheduledAt: 'asc' }],
     });
-    return matches.map(toPublicMatch);
+    return decorate(matches);
   },
 
   async findById(id: string): Promise<PublicMatch> {
     const match = await prisma.match.findUnique({
       where: { id },
-      include: { homeTeam: true, awayTeam: true },
+      include: {
+        homeTeam: true,
+        awayTeam: true,
+        field: true,
+      },
     });
     if (!match) {
       throw ApiError.notFound('Match not found', 'MATCH_NOT_FOUND');
     }
-    return toPublicMatch(match);
+    return decorate([match]).then((rows) => rows[0]!);
   },
 
   async findMatchdaysByLeague(leagueId: string): Promise<PublicMatchday[]> {

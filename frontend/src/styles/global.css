@@ -18,14 +18,16 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-  background-color: #FFF8E7;
-  color: #0A0A0A;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  /* Only the canvas animates — components keep their colors untouched. */
+  transition: background-color var(--duration-base) var(--ease-out);
   line-height: 1.5;
   min-height: 100vh;
 }
 
 a {
-  color: #00D9FF;
+  color: var(--color-cyan);
   text-decoration: none;
 }
 
@@ -53,14 +55,14 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  color: #5C5C70;
+  color: var(--color-text-muted);
 }
 
 .app-boot__spinner {
   width: 36px;
   height: 36px;
-  border: 3px solid #e2e8f0;
-  border-top-color: #00D9FF;
+  border: 3px solid var(--surface-muted);
+  border-top-color: var(--color-cyan);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
@@ -81,11 +83,11 @@ textarea {
 .photo-uploader--profile {
   width: 140px;
   height: 140px;
-  border: 4px solid #FFF8E7;
+  border: 4px solid var(--color-bg);
   border-radius: 50%;
   overflow: visible;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  background: #e2e8f0;
+  background: var(--surface-muted);
 }
 
 .photo-uploader__preview {
@@ -94,7 +96,7 @@ textarea {
   height: 100%;
   border: none;
   padding: 0;
-  background-color: #e2e8f0;
+  background-color: var(--surface-muted);
   background-size: cover;
   background-position: center;
   cursor: pointer;
@@ -133,7 +135,7 @@ textarea {
   height: 100%;
   font-size: 2.5rem;
   font-weight: 600;
-  color: #5C5C70;
+  color: var(--color-text-muted);
   text-transform: uppercase;
   user-select: none;
 }
@@ -145,8 +147,8 @@ textarea {
   justify-content: center;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
-  color: #f1f5f9;
+  background: linear-gradient(135deg, var(--color-fog) 0%, var(--color-carbon) 100%);
+  color: var(--color-text);
   gap: 0.5rem;
 }
 
@@ -251,8 +253,8 @@ textarea {
   margin-top: 0.4rem;
   font-size: 0.8rem;
   color: var(--color-error);
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: var(--surface-danger);
+  border: 1px solid var(--color-danger);
   padding: 0.3rem 0.6rem;
   border-radius: 4px;
   white-space: nowrap;

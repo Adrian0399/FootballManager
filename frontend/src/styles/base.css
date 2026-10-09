@@ -84,7 +84,7 @@
   text-decoration: none;        /* when used as <a class="btn"> */
   transition:
     transform var(--duration-fast) var(--ease-pop),
-    box-shadow var(--duration-fast) var(--ease-pop);
+    box-shadow var(--duration-fast) var(--ease-hover);
 }
 .kaibil-app a.btn { border-bottom: var(--border-bold); }
 .kaibil-app .btn:hover:not(:disabled) {
@@ -169,7 +169,7 @@
   box-shadow: 4px 4px 0 var(--color-coral);
 }
 .kaibil-app .input:disabled {
-  background: #ECECEC;
+  background: var(--surface-muted);
   cursor: not-allowed;
   opacity: 0.7;
 }
@@ -200,15 +200,15 @@
   font-weight: 600;
 }
 .kaibil-app .form-banner--error {
-  background: #FFE4E8;
+  background: var(--surface-danger);
   border-color: var(--color-coral);
   color: var(--color-coral);
   box-shadow: 4px 4px 0 var(--color-coral);
 }
 .kaibil-app .form-banner--success {
-  background: #D6FBE3;
+  background: var(--surface-success);
   border-color: var(--color-success);
-  color: #0F6B3D;
+  color: var(--text-on-success);
   box-shadow: 4px 4px 0 var(--color-success);
 }
 
@@ -255,7 +255,7 @@
   opacity: 0.18;
 }
 .kaibil-app .card-pack--cream {
-  background: var(--color-bg);
+  background: var(--color-row);
 }
 
 /* ---------- Chips / pills ---------- */
@@ -316,7 +316,7 @@
   grid-template-columns: 1.2fr 1fr;
   gap: var(--space-6);
   padding: var(--space-7) var(--space-6);
-  background: var(--color-bg);
+  background: var(--color-row);
   border-bottom: var(--border-heavy);
   position: relative;
   overflow: hidden;
@@ -577,7 +577,7 @@
   box-shadow: var(--shadow-sm);
   transition:
     transform var(--duration-fast) var(--ease-pop),
-    box-shadow var(--duration-fast) var(--ease-pop);
+    box-shadow var(--duration-fast) var(--ease-hover);
 }
 .modal__close:hover {
   transform: translate(-1px, -1px);
@@ -617,7 +617,7 @@
   padding: var(--space-3);
   border: var(--border-bold);
   border-radius: var(--radius-md);
-  background: var(--color-bg);
+  background: var(--color-row);
 }
 .kaibil-app .check-list__item {
   display: flex;
@@ -672,7 +672,7 @@
   border: var(--border-bold);
   border-style: dashed;
   border-radius: var(--radius-lg);
-  background: var(--color-bg);
+  background: var(--color-row);
 }
 .kaibil-app .empty-state h3 {
   margin-bottom: var(--space-2);
@@ -871,7 +871,7 @@
   box-shadow: 2px 2px 0 var(--color-ink);
   transition:
     transform var(--duration-fast) var(--ease-pop),
-    box-shadow var(--duration-fast) var(--ease-pop);
+    box-shadow var(--duration-fast) var(--ease-hover);
 }
 .kaibil-app .profile-match-row:hover {
   transform: translate(-1px, -1px);
@@ -897,7 +897,7 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-2) var(--space-1);
-  background: var(--color-bg);
+  background: var(--color-row);
   border: var(--border-thin);
   border-radius: var(--radius-sm);
   font-family: var(--font-mono);
@@ -1222,7 +1222,7 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3);
-  background: var(--color-bg);
+  background: var(--color-row);
   border: var(--border-thin);
   border-radius: var(--radius-md);
   transition: background var(--duration-fast) var(--ease-out);
@@ -1311,7 +1311,7 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3);
-  background: var(--color-bg);
+  background: var(--color-row);
   border: var(--border-thin);
   border-radius: var(--radius-md);
 }
@@ -1350,7 +1350,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  background: var(--color-bg);
+  background: var(--color-row);
 }
 .kaibil-app .form-section__legend {
   font-family: var(--font-display);
@@ -1407,7 +1407,7 @@
   flex-direction: column;
   gap: 2px;
   padding: var(--space-3);
-  background: var(--color-bg);
+  background: var(--color-row);
   border: var(--border-thin);
   border-radius: var(--radius-md);
 }
@@ -1465,7 +1465,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  background: var(--color-bg);
+  background: var(--color-row);
   border: var(--border-bold);
   border-radius: var(--radius-md);
   padding: var(--space-3);
@@ -1580,7 +1580,7 @@
   cursor: pointer;
   transition:
     transform var(--duration-fast) var(--ease-pop),
-    box-shadow var(--duration-fast) var(--ease-pop);
+    box-shadow var(--duration-fast) var(--ease-hover);
 }
 .kaibil-app .team-picker__icon-btn:hover:not(:disabled) {
   transform: translate(-1px, -1px);
@@ -1599,7 +1599,7 @@
   color: var(--color-text-dark);
 }
 .kaibil-app .team-picker__row.is-ghost {
-  background: var(--color-bg);
+  background: var(--color-row);
   border-style: dashed;
   color: var(--color-text-muted);
 }
@@ -1622,7 +1622,7 @@
   box-shadow: var(--shadow-sm);
   transition:
     transform var(--duration-fast) var(--ease-pop),
-    box-shadow var(--duration-fast) var(--ease-pop);
+    box-shadow var(--duration-fast) var(--ease-hover);
   cursor: grab;
 }
 .kaibil-app .match-pill:hover {
@@ -1657,7 +1657,7 @@
   font-family: var(--font-mono);
   font-size: var(--text-base);
   font-weight: 600;
-  background: var(--color-bg);
+  background: var(--color-row);
   border: var(--border-thin);
   border-radius: var(--radius-sm);
   padding: 4px 10px;
@@ -1689,7 +1689,7 @@
   height: 28px;
   border: var(--border-bold);
   border-radius: var(--radius-sm);
-  background: var(--color-bg);
+  background: var(--color-row);
   color: var(--color-ink);
   font-family: var(--font-display);
   text-decoration: none;
@@ -1706,11 +1706,11 @@
   border-color: var(--color-success);
 }
 .kaibil-app .match-pill--postponed {
-  background: #FFF1D8;
+  background: var(--surface-warning);
   border-color: var(--color-warning);
 }
 .kaibil-app .match-pill--cancelled {
-  background: #FFE4E8;
+  background: var(--surface-danger);
   border-color: var(--color-coral);
   opacity: 0.7;
 }
@@ -1745,7 +1745,7 @@
   flex-direction: column;
   gap: var(--space-3);
   padding: var(--space-4);
-  background: var(--color-bg);
+  background: var(--color-row);
   border: var(--border-bold);
   border-radius: var(--radius-md);
   min-height: 200px;
@@ -1796,7 +1796,7 @@
   flex-direction: column;
   gap: var(--space-3);
   padding: var(--space-4);
-  background: var(--color-bg);
+  background: var(--color-row);
   border: var(--border-bold);
   border-radius: var(--radius-md);
 }
@@ -1843,7 +1843,7 @@
   font-size: var(--text-sm);
 }
 .kaibil-app .calendar-view__cell--empty {
-  background: var(--color-bg);
+  background: var(--color-row);
 }
 .kaibil-app .calendar-view__cell.has-matches {
   background: var(--color-vamos);
@@ -1928,7 +1928,7 @@
   line-height: 1;
   color: var(--color-ink);
   padding: var(--space-2) var(--space-4);
-  background: var(--color-bg);
+  background: var(--color-row);
   border: var(--border-bold);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
@@ -1936,7 +1936,7 @@
 .kaibil-app .match-scoreboard__score--pending {
   font-size: var(--text-3xl);
   color: var(--color-text-muted);
-  background: var(--color-bg);
+  background: var(--color-row);
 }
 .kaibil-app .match-scoreboard__score-sep {
   color: var(--color-magenta);
@@ -1977,7 +1977,7 @@
 .kaibil-app .match-scoreboard__time {
   font-family: var(--font-mono);
   font-size: var(--text-sm);
-  background: var(--color-bg);
+  background: var(--color-row);
   border: var(--border-thin);
   border-radius: var(--radius-sm);
   padding: 4px 8px;
@@ -2207,7 +2207,7 @@
   background: linear-gradient(90deg, var(--color-vamos) 0%, var(--color-surface) 35%);
 }
 .kaibil-app .standings-row:hover {
-  background: var(--color-bg);
+  background: var(--color-row);
 }
 .kaibil-app .standings-cell {
   padding: var(--space-2) var(--space-3);
@@ -2241,7 +2241,7 @@
   font-family: var(--font-display);
   font-size: var(--text-sm);
   padding: 0 6px;
-  background: var(--color-bg);
+  background: var(--color-row);
   color: var(--color-ink);
 }
 .kaibil-app .standings-rank--top {
@@ -2368,7 +2368,7 @@
   font-size: var(--text-base);
   border: var(--border-bold);
   border-radius: var(--radius-sm);
-  background: var(--color-bg);
+  background: var(--color-row);
   color: var(--color-ink);
 }
 .kaibil-app .leaderboard__rank--gold {
@@ -2414,7 +2414,7 @@
 }
 .kaibil-app .leaderboard__bar {
   height: 12px;
-  background: var(--color-bg);
+  background: var(--color-row);
   border: var(--border-thin);
   border-radius: var(--radius-pill);
   overflow: hidden;
@@ -2565,7 +2565,7 @@
   gap: var(--space-2);
   color: var(--color-ink);
   border-bottom: none;
-  background: var(--color-bg);
+  background: var(--color-row);
   border: var(--border-thin);
   border-radius: var(--radius-pill);
   padding: 4px 12px 4px 4px;
@@ -2656,7 +2656,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  background: var(--color-bg);
+  background: var(--color-row);
   border: var(--border-bold);
   border-radius: var(--radius-md);
   padding: var(--space-3);
@@ -2754,7 +2754,7 @@
   align-items: center;
   gap: var(--space-2);
   padding: 4px 6px;
-  background: var(--color-bg);
+  background: var(--color-row);
   border: var(--border-thin);
   border-radius: var(--radius-sm);
   color: var(--color-ink);
@@ -2768,7 +2768,7 @@
   border-color: var(--color-ink);
 }
 .kaibil-app .bracket-match__side.is-tbd-side {
-  background: var(--color-bg);
+  background: var(--color-row);
   color: var(--color-text-muted);
   border-style: dashed;
   justify-content: center;
@@ -2928,7 +2928,7 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3);
-  background: var(--color-bg);
+  background: var(--color-row);
   border: var(--border-thin);
   border-radius: var(--radius-md);
   color: var(--color-ink);
@@ -3007,7 +3007,7 @@
   flex-direction: column;
   gap: var(--space-2);
   padding: var(--space-3);
-  background: var(--color-bg);
+  background: var(--color-row);
   border: var(--border-bold);
   border-radius: var(--radius-md);
   transition: transform var(--duration-fast) var(--ease-pop);
@@ -3142,7 +3142,7 @@
   font-family: var(--font-mono);
   font-size: var(--text-base);
   font-weight: 700;
-  background: var(--color-bg);
+  background: var(--color-row);
   border: var(--border-thin);
   border-radius: var(--radius-sm);
   padding: 4px 10px;
@@ -3173,7 +3173,7 @@
   border-bottom: var(--border-bold);
   transition:
     transform var(--duration-fast) var(--ease-pop),
-    box-shadow var(--duration-fast) var(--ease-pop);
+    box-shadow var(--duration-fast) var(--ease-hover);
 }
 .kaibil-app .league-team-card:hover {
   transform: translate(-2px, -2px);
@@ -3220,7 +3220,7 @@
   align-items: baseline;
   gap: 4px;
   font-size: var(--text-xs);
-  background: var(--color-bg);
+  background: var(--color-row);
   border: var(--border-thin);
   border-radius: var(--radius-sm);
   padding: 4px 8px;
@@ -3273,7 +3273,7 @@
   cursor: pointer;
   user-select: none;
   list-style: none;
-  background: var(--color-bg);
+  background: var(--color-row);
 }
 .kaibil-app .jornada__summary::-webkit-details-marker { display: none; }
 .kaibil-app .jornada[open] .jornada__summary {
@@ -3377,7 +3377,7 @@
   font-family: var(--font-mono);
   font-size: var(--text-sm);
   font-weight: 700;
-  background: var(--color-bg);
+  background: var(--color-row);
   border: var(--border-thin);
   border-radius: var(--radius-sm);
   padding: 2px 10px;
@@ -3400,4 +3400,254 @@
   .kaibil-app .cal-match-row__match { grid-area: match; }
   .kaibil-app .cal-match-row__when { grid-area: when; }
   .kaibil-app .cal-match-row > .chip { grid-area: status; justify-self: start; }
+}
+
+/* ============================================================
+ * THEME TOGGLE
+ * Same neobrutalist recipe as the rest of the UI: thick border +
+ * hard offset shadow, no blur. Thumb slides between the two states.
+ * ============================================================ */
+
+.kaibil-app .theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.kaibil-app .theme-toggle__track {
+  position: relative;
+  display: block;
+  width: 56px;
+  height: 30px;
+  padding: 2px;
+  background: var(--color-surface);
+  border: var(--border-thin);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--duration-base) var(--ease-out),
+    border-color var(--duration-base) var(--ease-out);
+}
+
+.kaibil-app .theme-toggle__thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: var(--color-vamos);
+  color: var(--color-ink);
+  border: var(--border-thin);
+  border-radius: 50%;
+  transform: translateX(0);
+  transition: transform var(--duration-base) var(--ease-pop),
+    background-color var(--duration-base) var(--ease-out);
+}
+
+/* dark mode: thumb slides to the right and turns cyan */
+.kaibil-app .theme-toggle[data-theme-state='dark'] .theme-toggle__thumb {
+  transform: translateX(26px);
+  background: var(--color-cyan);
+}
+
+.kaibil-app .theme-toggle__thumb svg {
+  width: 12px;
+  height: 12px;
+}
+
+.kaibil-app .theme-toggle:active .theme-toggle__thumb {
+  transform: translateX(0) scale(0.92);
+}
+
+.kaibil-app .theme-toggle[data-theme-state='dark']:active .theme-toggle__thumb {
+  transform: translateX(26px) scale(0.92);
+}
+
+.kaibil-app .theme-toggle:focus-visible {
+  outline: none;
+}
+
+.kaibil-app .theme-toggle:focus-visible .theme-toggle__track {
+  outline: var(--border-thin) solid var(--color-cyan);
+  outline-offset: 3px;
+}
+
+/* ============================================================
+ * MATCH BANNER
+ * Poster-style card for a finished match: date strip, crests
+ * flanking the score, scorers, and a footer with the referee.
+ * Used by the admin dashboard's "Últimos partidos finalizados".
+ * ============================================================ */
+
+.kaibil-app .match-banner {
+  list-style: none;
+  margin: 0 0 var(--space-3);
+}
+
+.kaibil-app .match-banner__link {
+  display: grid;
+  gap: var(--space-2);
+  padding: 0;
+  background: var(--color-row);
+  border: var(--border-thin);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--color-text);
+  transition: transform var(--duration-fast) var(--ease-snap),
+    box-shadow var(--duration-fast) var(--ease-snap);
+  box-shadow: var(--shadow-sm);
+}
+
+.kaibil-app .match-banner__link:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 var(--color-ink);
+}
+
+/* Date strip reads like a headline banner across the top. */
+.kaibil-app .match-banner__date {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  background: var(--color-vamos);
+  border-bottom: var(--border-thin);
+  font-family: var(--font-display);
+}
+
+.kaibil-app .match-banner__day {
+  font-size: var(--text-sm);
+  letter-spacing: 0.04em;
+}
+
+.kaibil-app .match-banner__time {
+  font-size: var(--text-lg);
+  line-height: 1;
+}
+
+.kaibil-app .match-banner__year {
+  margin-left: auto;
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+/* Teams + score */
+.kaibil-app .match-banner__teams {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
+
+.kaibil-app .match-banner__side {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.kaibil-app .match-banner__side:last-child {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.kaibil-app .match-banner__crest {
+  font-size: 1.75rem;
+  line-height: 1;
+  flex: none;
+}
+
+/* The winner gets the emphasis, not a colour change. */
+.kaibil-app .match-banner__side.is-winner .match-banner__crest {
+  transform: scale(1.15);
+}
+
+.kaibil-app .match-banner__side.is-winner .match-banner__name {
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 3px;
+}
+
+.kaibil-app .match-banner__name {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kaibil-app .match-banner__score {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  background: var(--color-surface-dark);
+  color: var(--color-text-dark);
+  border: var(--border-thin);
+  border-radius: var(--radius-sm);
+}
+
+.kaibil-app .match-banner__score-num {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  line-height: 1;
+}
+
+.kaibil-app .match-banner__score-sep {
+  opacity: 0.6;
+}
+
+/* Scorers */
+.kaibil-app .match-banner__scorers {
+  display: grid;
+  gap: 2px;
+  padding: 0 var(--space-3) var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.kaibil-app .match-banner__scorers-line {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kaibil-app .match-banner__ball {
+  flex: none;
+  color: var(--color-ink);
+}
+
+/* Footer */
+.kaibil-app .match-banner__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-top: var(--border-thin);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.kaibil-app .match-banner__field {
+  font-weight: 700;
+}
+
+@media (max-width: 560px) {
+  .kaibil-app .match-banner__teams {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .kaibil-app .match-banner__side:last-child {
+    flex-direction: row;
+  }
 }

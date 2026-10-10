@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { auditApi, type AuditSummary } from '../api/audit';
+import { auditApi, type AuditSummary, type AuditEntry } from '../api/audit';
 import { useIsAdmin } from '../hooks/useIsAdmin';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card } from '../components/ui/Card';
@@ -33,6 +33,7 @@ function timeOf(iso: string): string {
 export function AuditPage() {
   const isAdmin = useIsAdmin();
   const [summary, setSummary] = useState<AuditSummary | null>(null);
+  const [entries, setEntries] = useState<AuditEntry[]>([]);
   const [range, setRange] = useState<number>(30);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,11 +46,14 @@ export function AuditPage() {
     from.setDate(from.getDate() - range);
     from.setHours(0, 0, 0, 0);
 
-    auditApi
-      .summary(from.toISOString(), undefined)
-      .then((d) => {
+    Promise.all([
+      auditApi.summary(from.toISOString(), undefined),
+      auditApi.list({ from: from.toISOString(), size: 30 }),
+    ])
+      .then(([sum, list]) => {
         if (!cancelled) {
-          setSummary(d);
+          setSummary(sum);
+          setEntries(list.items);
           setError(null);
         }
       })
@@ -173,6 +177,31 @@ export function AuditPage() {
                 )}
               </Card>
             </div>
+
+            {/* Recent activity feed with friendly sentences */}
+            <Card>
+              <h3 style={{ fontSize: 'var(--text-lg)' }}>Actividad reciente</h3>
+              {entries.length > 0 ? (
+                <ul className="staff-list" style={{ marginTop: 'var(--space-2)' }}>
+                  {entries.map((e) => (
+                    <li key={e.id} className="staff-list__row">
+                      <div className="staff-list__body">
+                        <span className="staff-list__name">{e.message}</span>
+                        <span className="staff-list__role">
+                          {shortDate(e.createdAt)} · {timeOf(e.createdAt)}
+                          {e.userName ? ` · ${e.userName}` : ''}
+                        </span>
+                      </div>
+                      <Chip tone={e.statusCode >= 400 ? 'coral' : 'success'}>
+                        {e.statusCode}
+                      </Chip>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="muted">Aún no hay movimientos registrados.</p>
+              )}
+            </Card>
           </>
         )
       )}

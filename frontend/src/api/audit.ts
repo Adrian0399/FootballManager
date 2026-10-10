@@ -5,10 +5,13 @@ export interface AuditEntry {
   id: string;
   userId: string | null;
   userName: string | null;
+  actorRole: string | null;
   method: string;
   path: string;
   action: string;
   actionLabel: string;
+  /** Friendly sentence built by the backend: "El DT registró a X…". */
+  message: string;
   statusCode: number;
   ip: string | null;
   createdAt: string;

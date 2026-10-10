@@ -645,10 +645,12 @@ model Award {
 model AuditLog {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId     String?  @map("user_id") @db.Uuid
+  actorRole  String?  @map("actor_role")
   method     String   @map("method")
   path       String   @map("path")
   action     String   @map("action")
   statusCode Int      @map("status_code")
+  details    Json?    @map("details")
   ip         String?  @map("ip")
   userAgent  String?  @map("user_agent")
   createdAt  DateTime @default(now()) @map("created_at")

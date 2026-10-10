@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import { prisma } from '../prisma/prisma.client.js';
+import type { Prisma } from '@prisma/client';
 
 /**
  * Turns a request into a short, human-readable action label used to group
@@ -76,24 +77,37 @@ export function auditLogger(req: Request, res: Response, next: NextFunction): vo
     // `req.user` is set by `authenticate`, but login/register run BEFORE
     // that, so their actor is resolved from the email in the body instead.
     void (async () => {
-      const authedId = (req as unknown as { user?: { id: string } }).user?.id;
+      const authed = req as unknown as { user?: { id: string; role?: string } };
+      const authedId = authed.user?.id;
       let userId = authedId ?? null;
+      let actorRole = authed.user?.role ?? null;
       if (!userId && (req.body?.email as string | undefined)) {
         const u = await prisma.user
-          .findUnique({ where: { email: (req.body as { email: string }).email }, select: { id: true } })
+          .findUnique({
+            where: { email: (req.body as { email: string }).email },
+            select: { id: true, role: true },
+          })
           .catch(() => null);
         userId = u?.id ?? null;
+        actorRole = u?.role ?? null;
       }
+
+      // Snapshot the request payload so the dashboard can later build
+      // human-friendly sentences ("el DT agrego a X en el equipo Y").
+      // Sensitive fields are stripped and sizes capped.
+      const details = snapshotDetails(req);
 
       // Fire-and-forget: logging must never block or fail the response.
       await prisma.auditLog
         .create({
           data: {
             userId,
+            actorRole,
             method: req.method,
             path: fullPath,
             action,
             statusCode,
+            details,
             ip: req.ip ?? null,
             userAgent: req.get('user-agent') ?? null,
           },
@@ -105,4 +119,29 @@ export function auditLogger(req: Request, res: Response, next: NextFunction): vo
   });
 
   next();
+}
+
+/** Sanitised, size-capped snapshot of the request body + route params. */
+function snapshotDetails(req: Request): Prisma.JsonObject {
+  const clean = (v: unknown, depth = 0): unknown => {
+    if (v == null) return v;
+    if (typeof v === 'string') return v.slice(0, 200);
+    if (typeof v === 'number' || typeof v === 'boolean') return v;
+    if (depth > 3) return '[…]';
+    if (Array.isArray(v)) return v.slice(0, 10).map((x) => clean(x, depth + 1));
+    if (typeof v === 'object') {
+      const out: Record<string, unknown> = {};
+      for (const [k, val] of Object.entries(v as Record<string, unknown>)) {
+        if (/password|token|secret/i.test(k)) continue;
+        out[k] = clean(val, depth + 1);
+      }
+      return out;
+    }
+    return String(v);
+  };
+
+  return {
+    body: clean((req as Request & { body?: unknown }).body) as Prisma.InputJsonValue,
+    params: clean(req.params) as Prisma.InputJsonValue,
+  } as Prisma.JsonObject;
 }

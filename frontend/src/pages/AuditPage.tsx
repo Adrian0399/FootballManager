@@ -47,6 +47,41 @@ const METHOD_COLOR: Record<string, string> = {
   DELETE: 'var(--color-warning)',
 };
 
+/**
+ * Classifies an action string into a visual category (color + icon) so the
+ * "Tipos de acción" cards can show what the action actually IS, not just a
+ * translated label. The mapping is intentionally a few buckets: it's a
+ * monitoring dashboard, not a taxonomy.
+ */
+function classifyAction(action: string): {
+  icon: JSX.Element;
+  color: string;
+  category: string;
+} {
+  if (action === 'LOGIN' || action === 'LOGOUT' || action === 'REFRESH') {
+    return { icon: <WhistleIcon />, color: 'var(--color-warning)', category: 'AUTH' };
+  }
+  if (action === 'REGISTER') {
+    return { icon: <TrophyIcon />, color: 'var(--color-magenta)', category: 'CUENTA' };
+  }
+  if (action.includes('FIXTURE') || action.includes('LLAVES') || action.includes('AWARD')) {
+    return { icon: <FieldIcon />, color: 'var(--color-cyan)', category: 'CAMPEONATO' };
+  }
+  if (action.includes('MIEMBRO') || action.includes('EQUIPO_LIGA')) {
+    return { icon: <BallIcon />, color: 'var(--color-lime)', category: 'PLANTILLA' };
+  }
+  if (action.startsWith('POST_')) {
+    return { icon: <BallIcon />, color: 'var(--color-success)', category: 'CREAR' };
+  }
+  if (action.startsWith('PUT_') || action.startsWith('PATCH_')) {
+    return { icon: <ShieldIcon />, color: 'var(--color-cyan)', category: 'EDITAR' };
+  }
+  if (action.startsWith('DELETE_')) {
+    return { icon: <ShieldIcon />, color: 'var(--color-coral)', category: 'ELIMINAR' };
+  }
+  return { icon: <BallIcon />, color: 'var(--color-text-muted)', category: 'OTRO' };
+}
+
 function shortDate(iso: string): string {
   return iso.slice(0, 10);
 }
@@ -185,28 +220,51 @@ export function AuditPage() {
                 <ActivityChart data={summary.porDia} />
               </Card>
 
-              {/* Side: action mix */}
+              {/* Side: action mix as cards */}
               <Card className="audit-side-card">
                 <header className="audit-panel-head">
                   <h2>Tipos de acción</h2>
                 </header>
-                <ul className="audit-actions">
+                <div className="audit-action-grid">
                   {summary.porAccion.slice(0, 8).map((a) => {
                     const pct = Math.round((a.count / maxAction) * 100);
+                    const cls = classifyAction(a.action);
                     return (
-                      <li key={a.action} className="audit-action">
-                        <div className="audit-action__label">{a.actionLabel}</div>
-                        <div className="audit-action__track">
-                          <div
-                            className="audit-action__bar"
-                            style={{ width: `${pct}%` }}
-                          />
+                      <div
+                        key={a.action}
+                        className="audit-action-card"
+                        style={{
+                          // CSS custom properties consumed by the card CSS.
+                          ['--card-accent' as string]: cls.color,
+                        }}
+                      >
+                        <div
+                          className="audit-action-card__icon"
+                          aria-hidden="true"
+                        >
+                          {cls.icon}
                         </div>
-                        <div className="audit-action__count">{a.count}</div>
-                      </li>
+                        <div className="audit-action-card__body">
+                          <span className="audit-action-card__category">
+                            {cls.category}
+                          </span>
+                          <span className="audit-action-card__label">
+                            {a.actionLabel}
+                          </span>
+                        </div>
+                        <div className="audit-action-card__foot">
+                          <span className="audit-action-card__count">{a.count}</span>
+                          <div className="audit-action-card__track">
+                            <div
+                              className="audit-action-card__bar"
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
                     );
                   })}
-                </ul>
+                </div>
               </Card>
 
               {/* Top users */}

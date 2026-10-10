@@ -3916,48 +3916,110 @@
   display: block;
 }
 
-/* Action mix: horizontal bars */
-.kaibil-app .audit-actions {
-  display: flex;
-  flex-direction: column;
+/* Action mix: grid of cards, each with icon, category, count and a
+ * per-type accent colour pulled from --card-accent. */
+.kaibil-app .audit-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--space-2);
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.kaibil-app .audit-action {
+.kaibil-app .audit-action-card {
+  position: relative;
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: var(--space-3);
+  row-gap: var(--space-1);
+  padding: var(--space-3);
+  padding-left: calc(var(--space-3) + 4px);
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  /* Left accent stripe in the action's colour. */
+  box-shadow: inset 4px 0 0 var(--card-accent, var(--color-text-muted));
+  transition: transform var(--duration-fast) var(--ease-snap),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.kaibil-app .audit-action-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--card-accent, var(--color-text-muted));
+}
+
+.kaibil-app .audit-action-card__icon {
+  grid-row: 1 / span 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card-accent, var(--color-text-muted)) 18%, transparent);
+  color: var(--card-accent, var(--color-text-muted));
+  flex: none;
+}
+
+.kaibil-app .audit-action-card__icon svg { width: 20px; height: 20px; }
+
+.kaibil-app .audit-action-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.kaibil-app .audit-action-card__category {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--card-accent, var(--color-text-muted));
+  text-transform: uppercase;
+}
+
+.kaibil-app .audit-action-card__label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kaibil-app .audit-action-card__foot {
+  grid-column: 1 / -1;
+  display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2) 0;
+  margin-top: var(--space-1);
 }
 
-.kaibil-app .audit-action__label {
-  font-size: var(--text-sm);
-  color: var(--color-text);
+.kaibil-app .audit-action-card__count {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  line-height: 1;
+  color: var(--card-accent, var(--color-text));
+  min-width: 2.5rem;
+  text-align: right;
 }
 
-.kaibil-app .audit-action__track {
-  grid-column: 1 / -1;
-  height: 8px;
+.kaibil-app .audit-action-card__track {
+  flex: 1;
+  height: 6px;
   background: rgba(255,255,255,0.06);
   border-radius: var(--radius-pill);
   overflow: hidden;
 }
 
-.kaibil-app .audit-action__bar {
+.kaibil-app .audit-action-card__bar {
   height: 100%;
-  background: linear-gradient(90deg, var(--color-cyan), var(--color-magenta));
+  background: var(--card-accent, var(--color-text-muted));
   border-radius: var(--radius-pill);
-}
-
-.kaibil-app .audit-action__count {
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  font-weight: 700;
-  color: var(--color-text);
 }
 
 /* Users ranking */

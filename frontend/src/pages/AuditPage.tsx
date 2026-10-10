@@ -5,21 +5,18 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { EmptyState } from '../components/ui/EmptyState';
-
-/**
- * /audit — admin monitoring dashboard.
- *
- * Designed as a single control-room panel:
- *   1. Headline KPIs (mutaciones, 24h, usuarios, registros)
- *   2. Activity over time (CSS bar chart, last 30 days)
- *   3. Mix of actions (horizontal bars) and top users
- *   4. Live feed with role badge + method + status + readable message
- */
+import {
+  BallIcon,
+  ShieldIcon,
+  TrophyIcon,
+  WhistleIcon,
+  FieldIcon,
+} from '../components/icons';
 
 const RANGE_OPTIONS = [
-  { label: '7 días', days: 7 },
-  { label: '30 días', days: 30 },
-  { label: '90 días', days: 90 },
+  { label: '7d', days: 7 },
+  { label: '30d', days: 30 },
+  { label: '90d', days: 90 },
 ] as const;
 
 const ROLE_LABEL: Record<string, string> = {
@@ -29,20 +26,25 @@ const ROLE_LABEL: Record<string, string> = {
   ASSISTANT: 'AUXILIAR',
   PLAYER: 'JUGADOR',
 };
-
-const ROLE_TONE: Record<string, 'admin' | 'ref' | 'td' | 'asst' | 'player' | 'default'> = {
-  ADMIN: 'admin',
-  REFEREE: 'ref',
-  TECHNICAL_DIRECTOR: 'td',
-  ASSISTANT: 'asst',
-  PLAYER: 'player',
+const ROLE_ICON: Record<string, JSX.Element> = {
+  ADMIN: <ShieldIcon />,
+  REFEREE: <WhistleIcon />,
+  TECHNICAL_DIRECTOR: <TrophyIcon />,
+  ASSISTANT: <FieldIcon />,
+  PLAYER: <BallIcon />,
 };
-
-const METHOD_TONE: Record<string, 'success' | 'cyan' | 'warning' | 'coral'> = {
-  POST: 'success',
-  PUT: 'cyan',
-  PATCH: 'cyan',
-  DELETE: 'warning',
+const ROLE_COLOR: Record<string, string> = {
+  ADMIN: 'var(--color-coral)',
+  REFEREE: 'var(--color-warning)',
+  TECHNICAL_DIRECTOR: 'var(--color-cyan)',
+  ASSISTANT: 'var(--color-success)',
+  PLAYER: 'var(--color-lime)',
+};
+const METHOD_COLOR: Record<string, string> = {
+  POST: 'var(--color-success)',
+  PUT: 'var(--color-cyan)',
+  PATCH: 'var(--color-cyan)',
+  DELETE: 'var(--color-warning)',
 };
 
 function shortDate(iso: string): string {
@@ -74,7 +76,7 @@ export function AuditPage() {
 
     Promise.all([
       auditApi.summary(from.toISOString(), undefined),
-      auditApi.list({ from: from.toISOString(), size: 40 }),
+      auditApi.list({ from: from.toISOString(), size: 30 }),
     ])
       .then(([sum, list]) => {
         if (!cancelled) {
@@ -94,10 +96,6 @@ export function AuditPage() {
     };
   }, [isAdmin, range]);
 
-  const maxDay = useMemo(
-    () => (summary ? Math.max(1, ...summary.porDia.map((d) => d.count)) : 1),
-    [summary],
-  );
   const maxAction = useMemo(
     () => (summary ? Math.max(1, ...summary.porAccion.map((a) => a.count)) : 1),
     [summary],
@@ -116,10 +114,10 @@ export function AuditPage() {
   }
 
   return (
-    <div className="container section-stack">
+    <div className="container section-stack audit-page">
       <PageHeader
         title="Monitoreo"
-        description="Actividad del sistema: qué se mueve, quién lo mueve y cuándo."
+        description="Vista en vivo de la actividad del sistema."
         actions={
           <div className="audit-range">
             {RANGE_OPTIONS.map((o) => (
@@ -139,58 +137,61 @@ export function AuditPage() {
       {error && <p className="muted">{error}</p>}
 
       {isLoading && !summary ? (
-        <Card>
-          <p className="muted">Cargando actividad…</p>
-        </Card>
+        <div className="audit-loading">Cargando telemetría…</div>
       ) : (
         summary && (
           <>
-            {/* KPI row */}
+            {/* Hero KPI row */}
             <section className="audit-kpis" aria-label="Indicadores clave">
-              <KpiCard label="Mutaciones" value={summary.totals.mutaciones} tone="magenta" />
-              <KpiCard label="Últimas 24 h" value={summary.totals.ultimas24h} tone="lime" />
-              <KpiCard label="Usuarios activos" value={summary.totals.usuariosActivos} tone="cyan" />
-              <KpiCard label="Registros" value={summary.totals.registros} tone="warning" />
+              <Kpi
+                tone="cyan"
+                label="Mutaciones"
+                value={summary.totals.mutaciones}
+                icon={<ShieldIcon />}
+                hint={`${summary.totals.ultimas24h} en las últimas 24 h`}
+              />
+              <Kpi
+                tone="lime"
+                label="Usuarios activos"
+                value={summary.totals.usuariosActivos}
+                icon={<BallIcon />}
+                hint="con al menos una acción"
+              />
+              <Kpi
+                tone="coral"
+                label="Registros"
+                value={summary.totals.registros}
+                icon={<TrophyIcon />}
+                hint="nuevas cuentas creadas"
+              />
+              <Kpi
+                tone="warning"
+                label="Acciones hoy"
+                value={lastDayCount(summary.porDia)}
+                icon={<FieldIcon />}
+                hint="mutaciones en el día actual"
+              />
             </section>
 
-            {/* Activity over time */}
-            <Card>
-              <header className="audit-section-head">
-                <h2>Actividad por día</h2>
-                <span className="audit-section-head__hint">Últimos 30 días · máx {maxDay}</span>
-              </header>
-              <div className="audit-chart" role="img" aria-label="Actividad por día">
-                {summary.porDia.map((d, i) => {
-                  const ratio = d.count / maxDay;
-                  const heightPct = Math.max(2, Math.round(ratio * 100));
-                  const showLabel = i % 5 === 0 || i === summary.porDia.length - 1;
-                  return (
-                    <div className="audit-chart__col" key={d.date}>
-                      <span className="audit-chart__value">{d.count}</span>
-                      <div className="audit-chart__bar-wrap">
-                        <div
-                          className={`audit-chart__bar ${d.count === 0 ? 'is-zero' : ''}`.trim()}
-                          style={{ height: `${heightPct}%` }}
-                          title={`${d.date}: ${d.count} acciones`}
-                        />
-                      </div>
-                      <span className={`audit-chart__label ${showLabel ? '' : 'is-hidden'}`.trim()}>
-                        {formatDay(d.date)}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </Card>
+            <div className="audit-layout">
+              {/* Hero chart panel */}
+              <Card className="audit-chart-card">
+                <header className="audit-panel-head">
+                  <h2>Actividad</h2>
+                  <span className="audit-panel-head__sub">
+                    {summary.porDia.length} días
+                  </span>
+                </header>
+                <ActivityChart data={summary.porDia} />
+              </Card>
 
-            <div className="audit-grid">
-              {/* Mix of actions as horizontal bars */}
-              <Card>
-                <header className="audit-section-head">
+              {/* Side: action mix */}
+              <Card className="audit-side-card">
+                <header className="audit-panel-head">
                   <h2>Tipos de acción</h2>
                 </header>
                 <ul className="audit-actions">
-                  {summary.porAccion.slice(0, 10).map((a) => {
+                  {summary.porAccion.slice(0, 8).map((a) => {
                     const pct = Math.round((a.count / maxAction) * 100);
                     return (
                       <li key={a.action} className="audit-action">
@@ -209,8 +210,8 @@ export function AuditPage() {
               </Card>
 
               {/* Top users */}
-              <Card>
-                <header className="audit-section-head">
+              <Card className="audit-users-card">
+                <header className="audit-panel-head">
                   <h2>Usuarios más activos</h2>
                 </header>
                 {summary.usuariosMasActivos.length > 0 ? (
@@ -220,7 +221,8 @@ export function AuditPage() {
                         <span className="audit-user__rank">{i + 1}</span>
                         <span className="audit-user__name">{u.name}</span>
                         <span className="audit-user__count">
-                          {u.count} <span className="muted">acciones</span>
+                          <strong>{u.count}</strong>
+                          <span className="muted"> acciones</span>
                         </span>
                       </li>
                     ))}
@@ -231,11 +233,11 @@ export function AuditPage() {
               </Card>
             </div>
 
-            {/* Live feed */}
+            {/* Feed */}
             <Card>
-              <header className="audit-section-head">
+              <header className="audit-panel-head">
                 <h2>Actividad reciente</h2>
-                <span className="audit-section-head__hint">{entries.length} movimientos</span>
+                <span className="audit-panel-head__sub">{entries.length} movimientos</span>
               </header>
               {entries.length > 0 ? (
                 <ol className="audit-feed">
@@ -254,15 +256,165 @@ export function AuditPage() {
   );
 }
 
-function FeedItem({ entry }: { entry: AuditEntry }) {
-  const roleTone = (entry.actorRole && ROLE_TONE[entry.actorRole]) || 'default';
-  const roleLabel = (entry.actorRole && ROLE_LABEL[entry.actorRole]) || '—';
-  const methodTone = METHOD_TONE[entry.method] || 'default';
-  const ok = entry.statusCode < 400;
+function lastDayCount(porDia: { count: number }[]): number {
+  // porDia is oldest -> newest; the last entry is "today" if it lines up,
+  // but to be safe we use the most recent non-zero bucket.
+  for (let i = porDia.length - 1; i >= 0; i -= 1) {
+    if (porDia[i]!.count > 0) return porDia[i]!.count;
+  }
+  return 0;
+}
+
+function Kpi({
+  tone,
+  label,
+  value,
+  hint,
+  icon,
+}: {
+  tone: 'cyan' | 'lime' | 'coral' | 'warning';
+  label: string;
+  value: number;
+  hint?: string;
+  icon: JSX.Element;
+}) {
+  return (
+    <div className={`audit-kpi audit-kpi--${tone}`}>
+      <span className={`audit-kpi__icon audit-kpi__icon--${tone}`}>{icon}</span>
+      <div className="audit-kpi__body">
+        <span className="audit-kpi__value">{value.toLocaleString('es-MX')}</span>
+        <span className="audit-kpi__label">{label}</span>
+        {hint && <span className="audit-kpi__hint">{hint}</span>}
+      </div>
+    </div>
+  );
+}
+
+function ActivityChart({ data }: { data: { date: string; count: number }[] }) {
+  const { path, area, dots, max, total, ticks } = useMemo(() => {
+    const W = 1000, H = 220, PAD = 24;
+    if (data.length === 0) {
+      return { path: '', area: '', dots: [], max: 0, total: 0, ticks: [] };
+    }
+    const max = Math.max(1, ...data.map((d) => d.count));
+    const total = data.reduce((s, d) => s + d.count, 0);
+    const stepX = (W - PAD * 2) / Math.max(1, data.length - 1);
+    const points = data.map((d, i) => {
+      const x = PAD + i * stepX;
+      const y = H - PAD - (d.count / max) * (H - PAD * 2);
+      return { x, y, count: d.count, date: d.date };
+    });
+    // Build a smooth path with a single quadratic curve through midpoints
+    // for a soft line (no harsh corner where activity spikes).
+    let path = `M ${points[0]!.x},${points[0]!.y}`;
+    for (let i = 1; i < points.length; i += 1) {
+      const prev = points[i - 1]!;
+      const cur = points[i]!;
+      const midX = (prev.x + cur.x) / 2;
+      path += ` Q ${midX},${prev.y} ${midX},${(prev.y + cur.y) / 2} T ${cur.x},${cur.y}`;
+    }
+    const area = `${path} L ${points.at(-1)!.x},${H - PAD} L ${points[0]!.x},${H - PAD} Z`;
+    // Y-axis ticks: 0, mid, max.
+    const ticks = [
+      { y: H - PAD, label: '0' },
+      { y: H - PAD - (H - PAD * 2) / 2, label: String(Math.round(max / 2)) },
+      { y: PAD, label: String(max) },
+    ];
+    return { path, area, dots: points, max, total, ticks };
+  }, [data]);
 
   return (
+    <div className="audit-activity">
+      <div className="audit-activity__head">
+        <div>
+          <span className="audit-activity__total">{total.toLocaleString('es-MX')}</span>
+          <span className="audit-activity__sub">mutaciones en el rango</span>
+        </div>
+        <div className="audit-activity__legend">
+          <span className="audit-activity__dot" /> eventos
+        </div>
+      </div>
+      <svg className="audit-activity__svg" viewBox="0 0 1000 220" preserveAspectRatio="none" role="img">
+        <defs>
+          <linearGradient id="audit-area" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--color-cyan)" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="var(--color-cyan)" stopOpacity="0" />
+          </linearGradient>
+          <linearGradient id="audit-line" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="var(--color-cyan)" />
+            <stop offset="100%" stopColor="var(--color-magenta)" />
+          </linearGradient>
+        </defs>
+        {/* Grid */}
+        {ticks.map((t, i) => (
+          <g key={i}>
+            <line
+              x1="24"
+              y1={t.y}
+              x2="976"
+              y2={t.y}
+              stroke="var(--color-ink)"
+              strokeOpacity="0.12"
+              strokeDasharray="3 4"
+            />
+            <text x="6" y={t.y + 4} fill="var(--color-text-muted)" fontSize="10">
+              {t.label}
+            </text>
+          </g>
+        ))}
+        <path d={area} fill="url(#audit-area)" />
+        <path
+          d={path}
+          fill="none"
+          stroke="url(#audit-line)"
+          strokeWidth="2.5"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+        {dots.map((d, i) => (
+          <g key={i}>
+            <circle
+              cx={d.x}
+              cy={d.y}
+              r="3.5"
+              fill="var(--color-bg)"
+              stroke="var(--color-cyan)"
+              strokeWidth="1.5"
+            />
+            {d.count > 0 && (
+              <text
+                x={d.x}
+                y={d.y - 8}
+                textAnchor="middle"
+                fontSize="9"
+                fill="var(--color-text-muted)"
+                fontFamily="var(--font-mono)"
+              >
+                {d.count}
+              </text>
+            )}
+          </g>
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+function FeedItem({ entry }: { entry: AuditEntry }) {
+  const ok = entry.statusCode < 400;
+  const methodColor = METHOD_COLOR[entry.method] ?? 'var(--color-ink)';
+  const roleIcon = entry.actorRole ? ROLE_ICON[entry.actorRole] : <BallIcon />;
+  const roleLabel = entry.actorRole ? ROLE_LABEL[entry.actorRole] : '—';
+  const roleColor = entry.actorRole ? ROLE_COLOR[entry.actorRole] : 'var(--color-ink)';
+  return (
     <li className={`audit-feed__item ${ok ? '' : 'is-error'}`.trim()}>
-      <span className="audit-feed__rail" aria-hidden="true" />
+      <span
+        className="audit-feed__avatar"
+        style={{ color: roleColor, borderColor: roleColor }}
+        aria-hidden="true"
+      >
+        {roleIcon}
+      </span>
       <div className="audit-feed__body">
         <p className="audit-feed__message">{entry.message}</p>
         <p className="audit-feed__meta">
@@ -275,33 +427,21 @@ function FeedItem({ entry }: { entry: AuditEntry }) {
         </p>
       </div>
       <div className="audit-feed__tags">
-        <span className={`audit-tag audit-tag--role-${roleTone}`}>{roleLabel}</span>
-        <span className={`audit-tag audit-tag--method audit-tag--${methodTone}`}>
+        <span
+          className="audit-feed__method"
+          style={{ background: methodColor, color: 'var(--color-text-dark)' }}
+        >
           {entry.method}
         </span>
+        <span className="audit-feed__role" style={{ color: roleColor, borderColor: roleColor }}>
+          {roleLabel}
+        </span>
         <span
-          className={`audit-tag audit-tag--status ${ok ? 'is-ok' : 'is-fail'}`}
+          className={`audit-feed__status ${ok ? 'is-ok' : 'is-fail'}`}
         >
           {entry.statusCode}
         </span>
       </div>
     </li>
-  );
-}
-
-function KpiCard({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: number;
-  tone: 'magenta' | 'lime' | 'cyan' | 'warning';
-}) {
-  return (
-    <div className={`audit-kpi audit-kpi--${tone}`}>
-      <span className="audit-kpi__value">{value}</span>
-      <span className="audit-kpi__label">{label}</span>
-    </div>
   );
 }

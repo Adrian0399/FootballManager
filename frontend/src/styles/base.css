@@ -3701,12 +3701,77 @@
 }
 
 /* ============================================================
- * AUDIT DASHBOARD
- * Designed as a control-room panel: KPI strip, bar chart with values
- * on top, horizontal action mix, top users, and a vertical feed with
- * role / method / status tags and a leading rail.
+ * AUDIT MONITORING — dark control-room panel
+ * Big icon-disc KPIs, smooth area chart with gradient, action mix
+ * bars, ranked users, and a feed with role avatars.
  * ============================================================ */
 
+.kaibil-app .audit-page {
+  --color-bg: #0B0C12;
+  --color-surface: #161821;
+  --color-text: #ECEFF7;
+  --color-text-muted: #8B8FA3;
+  --color-ink: #C8CCD8;
+  --color-row: #161821;
+  --shadow-sm: 0 0 0 1px rgba(255,255,255,0.04);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.45);
+  --shadow-lg: 0 16px 48px rgba(0,0,0,0.55);
+  color: var(--color-text);
+}
+
+.kaibil-app .audit-page .card,
+.kaibil-app .audit-page .audit-kpi,
+.kaibil-app .audit-page .audit-user {
+  background: var(--color-surface);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: var(--shadow-md);
+  color: var(--color-text);
+}
+
+.kaibil-app .audit-page .page-header,
+.kaibil-app .audit-page .page-header__title { color: var(--color-text); }
+
+.kaibil-app .audit-loading {
+  padding: var(--space-7);
+  text-align: center;
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius-md);
+}
+
+/* Range toggle (segmented, dark) */
+.kaibil-app .audit-range {
+  display: inline-flex;
+  background: var(--color-surface);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-pill);
+  padding: 4px;
+}
+
+.kaibil-app .audit-range__btn {
+  padding: 0.4rem 0.9rem;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.kaibil-app .audit-range__btn:hover { color: var(--color-text); }
+
+.kaibil-app .audit-range__btn.is-active {
+  background: var(--color-cyan);
+  color: var(--color-text-dark);
+}
+
+/* KPI cards: big icon disc + value + label + hint */
 .kaibil-app .audit-kpis {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -3715,13 +3780,35 @@
 
 .kaibil-app .audit-kpi {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  align-items: center;
+  gap: var(--space-3);
   padding: var(--space-4);
-  background: var(--color-surface);
-  border: var(--border-bold);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-md);
+}
+
+.kaibil-app .audit-kpi__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--c) 18%, transparent);
+  flex: none;
+}
+
+.kaibil-app .audit-kpi--cyan    .audit-kpi__icon { --c: var(--color-cyan);    color: var(--color-cyan); }
+.kaibil-app .audit-kpi--lime    .audit-kpi__icon { --c: var(--color-lime);    color: var(--color-lime); }
+.kaibil-app .audit-kpi--coral   .audit-kpi__icon { --c: var(--color-coral);   color: var(--color-coral); }
+.kaibil-app .audit-kpi--warning .audit-kpi__icon { --c: var(--color-warning); color: var(--color-warning); }
+
+.kaibil-app .audit-kpi__icon svg { width: 24px; height: 24px; }
+
+.kaibil-app .audit-kpi__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .kaibil-app .audit-kpi__value {
@@ -3735,44 +3822,31 @@
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  color: var(--color-text-muted);
 }
 
-.kaibil-app .audit-kpi--magenta { background: var(--color-magenta); color: var(--color-text-dark); }
-.kaibil-app .audit-kpi--lime    { background: var(--color-lime);   color: var(--color-text-dark); }
-.kaibil-app .audit-kpi--cyan    { background: var(--color-cyan);   color: var(--color-text-dark); }
-.kaibil-app .audit-kpi--warning { background: var(--color-warning); color: var(--color-text-dark); }
-
-/* Range toggle */
-.kaibil-app .audit-range {
-  display: inline-flex;
-  border: var(--border-bold);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
+.kaibil-app .audit-kpi__hint {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  margin-top: 4px;
 }
 
-.kaibil-app .audit-range__btn {
-  padding: 0.5rem 1rem;
-  background: var(--color-surface);
-  border: 0;
-  border-right: var(--border-thin);
-  font-family: var(--font-display);
-  font-size: var(--text-sm);
-  cursor: pointer;
-  transition: background-color var(--duration-fast) var(--ease-out);
+/* Layout: chart (2fr) + side actions (1fr) on top, users below */
+.kaibil-app .audit-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-areas:
+    "chart actions"
+    "users  actions";
+  gap: var(--space-3);
 }
 
-.kaibil-app .audit-range__btn:last-child { border-right: 0; }
+.kaibil-app .audit-chart-card { grid-area: chart; }
+.kaibil-app .audit-side-card  { grid-area: actions; }
+.kaibil-app .audit-users-card { grid-area: users; }
 
-.kaibil-app .audit-range__btn:hover { background: var(--color-vamos); }
-
-.kaibil-app .audit-range__btn.is-active {
-  background: var(--color-ink);
-  color: var(--color-bg);
-}
-
-/* Section heading inside cards */
-.kaibil-app .audit-section-head {
+/* Panel header */
+.kaibil-app .audit-panel-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -3780,85 +3854,69 @@
   margin-bottom: var(--space-3);
 }
 
-.kaibil-app .audit-section-head h2 {
+.kaibil-app .audit-panel-head h2 {
   margin: 0;
   font-size: var(--text-lg);
+  color: var(--color-text);
 }
 
-.kaibil-app .audit-section-head__hint {
+.kaibil-app .audit-panel-head__sub {
   font-size: var(--text-xs);
   color: var(--color-text-muted);
   font-weight: 600;
 }
 
-/* Activity over time: bar chart with values on top */
-.kaibil-app .audit-chart {
-  display: flex;
-  align-items: flex-end;
-  gap: 2px;
-  height: 180px;
-  padding: 1.5rem var(--space-2) 0;
-  background: var(--color-row);
-  border: var(--border-thin);
-  border-radius: var(--radius-md);
-  overflow-x: auto;
-}
-
-.kaibil-app .audit-chart__col {
-  flex: 1 0 12px;
+/* Activity area chart */
+.kaibil-app .audit-activity {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  min-width: 12px;
-}
-
-.kaibil-app .audit-chart__value {
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
-  color: var(--color-text-muted);
-  line-height: 1;
-}
-
-.kaibil-app .audit-chart__bar-wrap {
-  flex: 1;
-  width: 100%;
-  display: flex;
-  align-items: flex-end;
-}
-
-.kaibil-app .audit-chart__bar {
-  width: 100%;
-  min-height: 2px;
-  background: var(--color-cyan);
-  border: 1px solid var(--color-ink);
-  border-bottom: 0;
-  border-radius: 3px 3px 0 0;
-  transition: background-color var(--duration-fast) var(--ease-out);
-}
-
-.kaibil-app .audit-chart__bar.is-zero {
-  background: var(--color-row);
-  border-color: var(--color-text-muted);
-  opacity: 0.6;
-}
-
-.kaibil-app .audit-chart__label {
-  font-family: var(--font-mono);
-  font-size: 0.55rem;
-  color: var(--color-text-muted);
-  font-weight: 600;
-}
-
-.kaibil-app .audit-chart__label.is-hidden { visibility: hidden; }
-
-/* Two-up grid for actions + users */
-.kaibil-app .audit-grid {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
   gap: var(--space-3);
 }
 
+.kaibil-app .audit-activity__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.kaibil-app .audit-activity__total {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  color: var(--color-text);
+}
+
+.kaibil-app .audit-activity__sub {
+  margin-left: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kaibil-app .audit-activity__legend {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.kaibil-app .audit-activity__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-cyan);
+  box-shadow: 0 0 12px var(--color-cyan);
+}
+
+.kaibil-app .audit-activity__svg {
+  width: 100%;
+  height: 220px;
+  display: block;
+}
+
+/* Action mix: horizontal bars */
 .kaibil-app .audit-actions {
   display: flex;
   flex-direction: column;
@@ -3870,37 +3928,39 @@
 
 .kaibil-app .audit-action {
   display: grid;
-  grid-template-columns: minmax(140px, 1fr) 2fr auto;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: var(--space-2);
+  padding: var(--space-2) 0;
 }
 
 .kaibil-app .audit-action__label {
   font-size: var(--text-sm);
-  font-weight: 600;
+  color: var(--color-text);
 }
 
 .kaibil-app .audit-action__track {
-  height: 14px;
-  background: var(--color-row);
-  border: var(--border-thin);
+  grid-column: 1 / -1;
+  height: 8px;
+  background: rgba(255,255,255,0.06);
   border-radius: var(--radius-pill);
   overflow: hidden;
 }
 
 .kaibil-app .audit-action__bar {
   height: 100%;
-  background: var(--color-cyan);
-  border-right: var(--border-thin);
+  background: linear-gradient(90deg, var(--color-cyan), var(--color-magenta));
+  border-radius: var(--radius-pill);
 }
 
 .kaibil-app .audit-action__count {
   font-family: var(--font-mono);
+  font-size: var(--text-sm);
   font-weight: 700;
-  min-width: 2.5rem;
-  text-align: right;
+  color: var(--color-text);
 }
 
+/* Users ranking */
 .kaibil-app .audit-users {
   display: flex;
   flex-direction: column;
@@ -3908,7 +3968,6 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  counter-reset: userrank;
 }
 
 .kaibil-app .audit-user {
@@ -3917,19 +3976,19 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3);
-  background: var(--color-row);
-  border: var(--border-thin);
-  border-radius: var(--radius-md);
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: var(--radius-sm);
 }
 
 .kaibil-app .audit-user__rank {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: var(--color-ink);
-  color: var(--color-bg);
+  width: 24px;
+  height: 24px;
+  background: var(--color-cyan);
+  color: var(--color-text-dark);
   font-family: var(--font-display);
   font-size: var(--text-sm);
   border-radius: 50%;
@@ -3937,50 +3996,58 @@
 
 .kaibil-app .audit-user__name {
   font-weight: 600;
+  color: var(--color-text);
 }
 
-.kaibil-app .audit-user__count {
+.kaibil-app .audit-user__count strong {
   font-family: var(--font-mono);
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
 }
 
-/* Live feed: vertical timeline */
+.kaibil-app .audit-user__count .muted {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  margin-left: 4px;
+}
+
+/* Feed: clean list with avatar */
 .kaibil-app .audit-feed {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
   list-style: none;
   margin: 0;
-  padding: 0 0 0 var(--space-2);
+  padding: 0;
 }
 
 .kaibil-app .audit-feed__item {
-  position: relative;
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: var(--space-2) var(--space-3);
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
   padding: var(--space-3);
-  background: var(--color-row);
-  border: var(--border-thin);
-  border-radius: var(--radius-md);
-  align-items: start;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: var(--radius-sm);
 }
 
 .kaibil-app .audit-feed__item.is-error {
-  background: var(--surface-danger);
+  background: rgba(255, 61, 90, 0.12);
+  border-color: var(--color-coral);
 }
 
-.kaibil-app .audit-feed__rail {
-  position: absolute;
-  left: -8px;
-  top: 16px;
-  bottom: -16px;
-  width: 2px;
-  background: var(--color-text-muted);
-  opacity: 0.5;
+.kaibil-app .audit-feed__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid;
+  background: rgba(0,0,0,0.25);
 }
 
-.kaibil-app .audit-feed__item:last-child .audit-feed__rail { display: none; }
+.kaibil-app .audit-feed__avatar svg { width: 18px; height: 18px; }
 
 .kaibil-app .audit-feed__body { min-width: 0; }
 
@@ -3988,7 +4055,8 @@
   margin: 0;
   font-size: var(--text-sm);
   font-weight: 600;
-  line-height: 1.35;
+  color: var(--color-text);
+  line-height: 1.4;
 }
 
 .kaibil-app .audit-feed__meta {
@@ -4000,46 +4068,44 @@
   flex-wrap: wrap;
 }
 
-.kaibil-app .audit-feed__user { font-weight: 600; }
+.kaibil-app .audit-feed__user { font-weight: 600; color: var(--color-text); }
 
 .kaibil-app .audit-feed__tags {
   display: flex;
-  gap: var(--space-1);
+  gap: 6px;
   align-items: center;
   flex-wrap: wrap;
   justify-content: flex-end;
 }
 
-.kaibil-app .audit-tag {
+.kaibil-app .audit-feed__method,
+.kaibil-app .audit-feed__role,
+.kaibil-app .audit-feed__status {
   display: inline-flex;
   align-items: center;
   padding: 2px 8px;
   font-family: var(--font-mono);
   font-size: 0.65rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  background: var(--color-surface);
-  color: var(--color-text);
-  border: 1px solid var(--color-ink);
   border-radius: 9999px;
 }
 
-.kaibil-app .audit-tag--role-admin { background: var(--color-coral); color: var(--color-text-dark); }
-.kaibil-app .audit-tag--role-ref   { background: var(--color-warning); color: var(--color-text-dark); }
-.kaibil-app .audit-tag--role-td    { background: var(--color-cyan); color: var(--color-text-dark); }
-.kaibil-app .audit-tag--role-asst  { background: var(--color-fog); color: var(--color-text-dark); }
-.kaibil-app .audit-tag--role-player{ background: var(--color-lime); color: var(--color-text-dark); }
-.kaibil-app .audit-tag--method-success { background: var(--color-success); color: var(--color-text-dark); }
-.kaibil-app .audit-tag--method-cyan    { background: var(--color-cyan); color: var(--color-text-dark); }
-.kaibil-app .audit-tag--method-warning { background: var(--color-warning); color: var(--color-text-dark); }
-.kaibil-app .audit-tag--method-coral   { background: var(--color-coral); color: var(--color-text-dark); }
-.kaibil-app .audit-tag--status.is-ok   { background: var(--color-lime); color: var(--color-text-dark); }
-.kaibil-app .audit-tag--status.is-fail { background: var(--color-danger); color: var(--color-text-dark); }
+.kaibil-app .audit-feed__method { color: var(--color-text-dark); }
 
-@media (max-width: 720px) {
+.kaibil-app .audit-feed__role {
+  background: transparent;
+  border: 1.5px solid;
+}
+
+.kaibil-app .audit-feed__status.is-ok   { background: var(--color-lime);   color: var(--color-text-dark); }
+.kaibil-app .audit-feed__status.is-fail { background: var(--color-coral); color: var(--color-text-dark); }
+
+@media (max-width: 860px) {
   .kaibil-app .audit-kpis { grid-template-columns: repeat(2, 1fr); }
-  .kaibil-app .audit-grid { grid-template-columns: 1fr; }
-  .kaibil-app .audit-feed__item { grid-template-columns: 1fr; }
-  .kaibil-app .audit-feed__tags { justify-content: flex-start; }
+  .kaibil-app .audit-layout {
+    grid-template-columns: 1fr;
+    grid-template-areas: "chart" "actions" "users";
+  }
 }

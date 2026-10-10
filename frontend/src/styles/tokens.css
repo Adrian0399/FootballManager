@@ -117,39 +117,59 @@
   --color-row: #FFF8E7;
 }
 
-/* ============================================================
- * DARK THEME
- * Applied via <html data-theme="dark"> (set by useTheme).
- *
- * The neobrutalist look depends on thick borders and hard offset
- * shadows. Both are built on --color-ink, so flipping that single
- * token to a light value keeps every border and shadow visible on
- * a dark canvas — no per-component overrides needed.
- * ============================================================ */
-/* ============================================================
- * DARK THEME
- * Applied via <html data-theme="dark"> (set by useTheme).
- *
- * Deliberately minimal: ONLY the page canvas changes. Every component
- * (buttons, cards, header, tables, banners, medals) keeps exactly the
- * same colors, borders and shadows it has in the light theme, so
- * toggling never restyles the product — it only re-frames it.
- * ============================================================ */
-[data-theme='dark'] {
-  --color-bg: #55565C;
-}
 
-  /* Brand accents stay identical — they are the identity of the brand
-     and they already read well on dark. Only --color-vamos needs a
-     slight lift to keep its contrast against the dark canvas. */
-  --color-vamos: #FFE600;
-}
-
-/* Respect users who prefer less motion */
 @media (prefers-reduced-motion: reduce) {
   :root {
     --duration-fast: 0ms;
     --duration-base: 0ms;
     --duration-slow: 0ms;
   }
+}
+
+/* ============================================================
+ * DARK THEME
+ * Minimal on purpose: the user only wanted the page canvas to swap
+ * so the rest of the product keeps the brand colors unchanged.
+ * ============================================================ */
+[data-theme='dark'] {
+  --color-bg:           #55565C;
+  --color-surface:      #6E7078;
+  --color-surface-dark: #4B4C52;
+  --color-text:         #F4F0E3;
+  --color-text-dark:    #2A2B30;
+  --color-text-muted:   #D2D3D8;
+  --color-ink:    #DCD8CC;
+  --color-carbon: #4F5056;
+  --color-fog:    #2B2E3A;
+  --surface-muted:     #343846;
+  --surface-danger:    #4A262E;
+  --surface-success:   #1A3D29;
+  --surface-warning:   #4A3619;
+  --text-on-success:   #8AEBC0;
+  --text-on-dark-soft: #B5F0D0;
+  --color-vamos: #FFE600;
+}
+
+/* ============================================================
+ * WALLPAPER THEMES
+ * The canvas becomes a real image; the rest of the palette matches
+ * dark so the rest of the app stays readable. A fallback hex is
+ * included so the page never paints a transparent body while loading.
+ * ============================================================ */
+[data-theme='wp1'] {
+  --color-bg: url('/wallpaper-01.jpg') center / cover no-repeat fixed #1F202A;
+  --color-text:        #F4F0E3;
+  --color-text-dark:   #1A1B22;
+  --color-text-muted:  #C8CCD8;
+  --color-surface:     #262935;
+  --color-ink:         #E4E2DA;
+}
+
+[data-theme='wp2'] {
+  --color-bg: url('/wallpaper-02.jpg') center / cover no-repeat fixed #1F202A;
+  --color-text:        #F4F0E3;
+  --color-text-dark:   #1A1B22;
+  --color-text-muted:  #C8CCD8;
+  --color-surface:     #262935;
+  --color-ink:         #E4E2DA;
 }

@@ -1,35 +1,77 @@
-import { useTheme } from '../hooks/useTheme';
+import { useEffect, useRef, useState } from 'react';
+import { useTheme, THEMES } from '../hooks/useTheme';
 import { SunIcon, MoonIcon } from './icons';
 
 /**
- * Light / dark theme switch.
+ * Theme picker.
  *
- * Sits in the header next to the profile. It uses the same neobrutalist
- * recipe as the rest of the UI (thick border + hard offset shadow) so it
- * does not look foreign next to the other header controls.
- *
- * The label is hidden visually but kept for screen readers, so the
- * control announces what it will do rather than the current state.
+ * Four options: light, dark, and two wallpaper themes whose background
+ * image is set in `tokens.css`. Stored in localStorage so the pick
+ * survives reloads.
  */
 export function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme();
-  const isDark = theme === 'dark';
-  const label = isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro';
+  const { theme, setTheme, themes } = useTheme();
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+  const isDarkish = theme !== 'light';
+  const label = isDarkish ? 'Cambiar tema' : 'Cambiar tema';
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
 
   return (
-    <button
-      type="button"
-      className="theme-toggle"
-      onClick={toggleTheme}
-      aria-label={label}
-      title={label}
-      data-theme-state={theme}
-    >
-      <span className="theme-toggle__track" aria-hidden="true">
-        <span className="theme-toggle__thumb">
-          {isDark ? <MoonIcon /> : <SunIcon />}
-        </span>
-      </span>
-    </button>
+    <div className="theme-picker" ref={wrapRef}>
+      <button
+        type="button"
+        className="theme-picker__trigger"
+        onClick={() => setOpen((v) => !v)}
+        aria-label={label}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        title={label}
+      >
+        {isDarkish ? <MoonIcon /> : <SunIcon />}
+      </button>
+
+      {open && (
+        <div className="theme-picker__menu" role="menu">
+          {themes.map((t) => (
+            <button
+              key={t.value}
+              type="button"
+              role="menuitemradio"
+              aria-checked={theme === t.value}
+              className={`theme-option ${theme === t.value ? 'is-active' : ''}`.trim()}
+              onClick={() => {
+                setTheme(t.value);
+                setOpen(false);
+              }}
+            >
+              <span
+                className="theme-option__swatch"
+                style={{ background: t.swatch }}
+                aria-hidden="true"
+              />
+              <span className="theme-option__label">{t.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

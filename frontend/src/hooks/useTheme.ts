@@ -1,8 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
 
-export type Theme = 'light' | 'dark';
+export type Theme = 'light' | 'dark' | 'wp1' | 'wp2';
+
+export const THEMES: Array<{ value: Theme; label: string; swatch: string }> = [
+  { value: 'light', label: 'Claro', swatch: '#FFF8E7' },
+  { value: 'dark', label: 'Oscuro', swatch: '#55565C' },
+  { value: 'wp1', label: 'Wallpaper 1', swatch: 'url(/wallpaper-01.jpg)' },
+  { value: 'wp2', label: 'Wallpaper 2', swatch: 'url(/wallpaper-02.jpg)' },
+];
 
 const STORAGE_KEY = 'kaibil-theme';
+
+function isTheme(v: string | null): v is Theme {
+  return v === 'light' || v === 'dark' || v === 'wp1' || v === 'wp2';
+}
 
 /**
  * Read the persisted preference. Falls back to the OS preference so a
@@ -11,34 +22,48 @@ const STORAGE_KEY = 'kaibil-theme';
 function readInitialTheme(): Theme {
   if (typeof window === 'undefined') return 'light';
   const stored = window.localStorage.getItem(STORAGE_KEY);
-  if (stored === 'light' || stored === 'dark') return stored;
+  if (isTheme(stored)) return stored;
   return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+/** Maps a theme to a single color string for the browser chrome. */
+function metaColorFor(theme: Theme): string {
+  switch (theme) {
+    case 'light':
+      return '#FFF8E7';
+    case 'dark':
+    case 'wp1':
+    case 'wp2':
+      return '#1F202A';
+  }
 }
 
 /** Applies the theme to <html> so the CSS `[data-theme]` block kicks in. */
 function applyTheme(theme: Theme): void {
   document.documentElement.setAttribute('data-theme', theme);
-  // Keep the browser UI (address bar on mobile) in sync.
   const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
-  if (meta) meta.setAttribute('content', theme === 'dark' ? '#55565C' : '#FFF8E7');
+  if (meta) meta.setAttribute('content', metaColorFor(theme));
 }
 
 /**
- * Applies the saved theme BEFORE React mounts (see `main.tsx`), so the
- * first paint is already correct and there is no light flash on a dark
- * theme. Exported separately because it must run outside the component.
+ * Runs before the first paint (see `main.tsx`) so dark/wp users don't see
+ * a flash of the light background while React mounts.
  */
 export function bootstrapTheme(): void {
   applyTheme(readInitialTheme());
 }
 
 /**
- * Theme toggle state.
- *
- * The whole app reads CSS variables, so switching only flips one attribute
- * on `<html>` — no re-render of the tree and no component-level colors.
+ * Theme state. Switching only flips the `data-theme` attribute on <html>;
+ * the whole app reads CSS variables so no component-level re-render
+ * is needed and no per-component colors change.
  */
-export function useTheme(): { theme: Theme; toggleTheme: () => void; setTheme: (t: Theme) => void } {
+export function useTheme(): {
+  theme: Theme;
+  setTheme: (t: Theme) => void;
+  cycleTheme: () => void;
+  themes: typeof THEMES;
+} {
   const [theme, setThemeState] = useState<Theme>(readInitialTheme);
 
   useEffect(() => {
@@ -47,10 +72,12 @@ export function useTheme(): { theme: Theme; toggleTheme: () => void; setTheme: (
   }, [theme]);
 
   const setTheme = useCallback((next: Theme) => setThemeState(next), []);
-  const toggleTheme = useCallback(
-    () => setThemeState((t) => (t === 'dark' ? 'light' : 'dark')),
-    [],
-  );
+  const cycleTheme = useCallback(() => {
+    setThemeState((t) => {
+      const i = THEMES.findIndex((x) => x.value === t);
+      return THEMES[(i + 1) % THEMES.length]!.value;
+    });
+  }, []);
 
-  return { theme, toggleTheme, setTheme };
+  return { theme, setTheme, cycleTheme, themes: THEMES };
 }

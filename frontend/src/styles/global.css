@@ -18,7 +18,9 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-  background-color: var(--color-bg);
+  /* Shorthand (not background-color) so the value can be either a colour
+     (light/dark) or a `url(...) center/cover...` (wallpaper themes). */
+  background: var(--color-bg);
   color: var(--color-text);
   /* Only the canvas animates — components keep their colors untouched. */
   transition: background-color var(--duration-base) var(--ease-out);

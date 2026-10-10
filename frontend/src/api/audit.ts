@@ -24,7 +24,7 @@ export interface AuditSummary {
     usuariosActivos: number;
     registros: number;
   };
-  porAccion: Array<{ action: string; count: number }>;
+  porAccion: Array<{ action: string; actionLabel: string; count: number }>;
   porDia: Array<{ date: string; count: number }>;
   usuariosMasActivos: Array<{ userId: string; name: string; count: number }>;
 }

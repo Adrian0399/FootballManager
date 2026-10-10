@@ -344,6 +344,7 @@ export const auditService = {
       },
       porAccion: porAccion.map((a) => ({
         action: a.action,
+        actionLabel: ACTION_LABEL[a.action] ?? a.action,
         count: a._count._all,
       })),
       porDia: days,

@@ -210,6 +210,10 @@ model User {
   awardsCreatedByMe   Award[] @relation("AwardCreatedBy")
   awardsUpdatedByMe   Award[] @relation("AwardUpdatedBy")
 
+  // ----- v1.2 — Team invites -----
+  teamInvitesCreated TeamInvite[] @relation("TeamInviteCreatedBy")
+  teamInvitesUsed    TeamInvite[] @relation("TeamInviteUsedBy")
+
   @@index([email])
   @@index([curp])
   @@index([role])
@@ -412,6 +416,7 @@ model Team {
   awayMatches   Match[]          @relation("MatchAway")
   events        MatchEvent[]
   awards        Award[]
+  invites       TeamInvite[]
 
   @@index([name])
   @@index([homeFieldId])
@@ -659,4 +664,31 @@ model AuditLog {
   @@index([userId])
   @@index([action])
   @@map("audit_logs")
+}
+
+// ---------------------------------------------------------------------------
+// TeamInvite — one-time invitation to join a team as a specific role.
+// The token is shared via link + QR; registering with it locks the role and
+// creates the TeamMembership in one step.
+// ---------------------------------------------------------------------------
+model TeamInvite {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  teamId      String    @map("team_id") @db.Uuid
+  role        TeamRole
+  token       String    @unique @db.VarChar(64)
+  expiresAt   DateTime  @map("expires_at")
+  usedAt      DateTime? @map("used_at")
+  usedById    String?   @map("used_by") @db.Uuid
+
+  // ----- Audit columns -----
+  createdAt   DateTime  @default(now()) @map("created_at")
+  createdById String?   @map("created_by") @db.Uuid
+
+  team      Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdBy User?  @relation("TeamInviteCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  usedBy    User?  @relation("TeamInviteUsedBy", fields: [usedById], references: [id], onDelete: SetNull)
+
+  @@index([teamId])
+  @@index([expiresAt])
+  @@map("team_invites")
 }

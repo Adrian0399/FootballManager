@@ -11,6 +11,20 @@ import { hashPassword, verifyPassword } from '../../shared/utils/password.util.j
 import { calculateAge } from '../../shared/utils/age.util.js';
 import { toPublicUserWithAge, type PublicUser } from '../../shared/utils/user.util.js';
 import type { RegisterDto, LoginDto } from './auth.validation.js';
+import { invitesService } from '../invites/invites.service.js';
+import type { TeamRole, UserRole } from '@prisma/client';
+
+/** Maps a team-level role (from an invite) to the global user role. */
+function userRoleFromTeamRole(role: TeamRole): UserRole {
+  switch (role) {
+    case 'DT':
+      return 'TECHNICAL_DIRECTOR';
+    case 'ASSISTANT':
+      return 'ASSISTANT';
+    case 'PLAYER':
+      return 'PLAYER';
+  }
+}
 
 export type { PublicUser };
 
@@ -55,6 +69,18 @@ export const authService = {
 
     const passwordHash = await hashPassword(dto.password);
 
+    // Invitation flow: resolve the token up front (validates it's fresh and
+    // unused), lock the role to the invite's, and later attach the
+    // TeamMembership. The user is created first so we have the id to
+    // consume the invite.
+    let invite: { teamId: string; role: TeamRole } | null = null;
+    if (dto.inviteToken) {
+      const resolved = await invitesService.resolve(dto.inviteToken);
+      invite = { teamId: resolved.team.id, role: resolved.role };
+    }
+
+    const role = invite ? userRoleFromTeamRole(invite.role) : creatorId ? dto.role : 'PLAYER';
+
     const user = await prisma.user.create({
       data: {
         firstName: dto.firstName,
@@ -62,10 +88,9 @@ export const authService = {
         maternalSurname: dto.maternalSurname,
         birthDate: dto.birthDate,
         age: calculateAge(dto.birthDate),
-        // Self-registration can never mint an administrator. Only an
-        // existing ADMIN creating the account (users.controller) may set
-        // a role; the public endpoint always lands on PLAYER.
-        role: creatorId ? dto.role : 'PLAYER',
+        // Invites lock the role; public self-registration is always PLAYER;
+        // an ADMIN provisioning an account (users.controller) may set any role.
+        role,
         nickname: dto.nickname,
         phoneNumber: dto.phoneNumber,
         email: dto.email,
@@ -75,6 +100,25 @@ export const authService = {
         updatedById: creatorId ?? null,
       },
     });
+
+    // Attach the membership and mark the invite used in one transaction.
+    if (invite) {
+      await prisma.$transaction([
+        prisma.teamMembership.create({
+          data: {
+            teamId: invite.teamId,
+            userId: user.id,
+            membershipRole: invite.role,
+            createdById: user.id,
+            updatedById: user.id,
+          },
+        }),
+        prisma.teamInvite.update({
+          where: { token: dto.inviteToken! },
+          data: { usedAt: new Date(), usedById: user.id },
+        }),
+      ]);
+    }
 
     return issueTokens(user);
   },

@@ -30,6 +30,9 @@ export const registerSchema = z.object({
     .string()
     .regex(/^[A-Z]{4}[0-9]{6}[A-Z]{6}[0-9]{2}$/, 'Invalid CURP format (18 chars)'),
   password: passwordSchema,
+  // Optional: registering from an invitation link locks the role and
+  // associates the account with the inviting team.
+  inviteToken: z.string().max(64).optional(),
 });
 
 export const loginSchema = z.object({

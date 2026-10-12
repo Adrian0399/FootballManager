@@ -24,6 +24,7 @@ import { knockoutRouter } from './modules/knockout/knockout.routes.js';
 import { profileRouter } from './modules/profile/profile.routes.js';
 import { awardsRouter } from './modules/awards/awards.routes.js';
 import { auditRouter } from './modules/audit/audit.routes.js';
+import { invitesRouter } from './modules/invites/invites.routes.js';
 import { auditLogger } from './shared/middlewares/audit.middleware.js';
 
 export function buildApp(): express.Express {
@@ -107,6 +108,7 @@ export function buildApp(): express.Express {
 
   app.use('/api/v1', awardsRouter);
   app.use('/api/v1', auditRouter);
+  app.use('/api/v1', invitesRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

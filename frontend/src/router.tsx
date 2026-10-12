@@ -65,6 +65,9 @@ const UsersPage = lazy(() =>
 const AuditPage = lazy(() =>
   import('./pages/AuditPage').then((m) => ({ default: m.AuditPage })),
 );
+const CalendarPage = lazy(() =>
+  import('./pages/CalendarPage').then((m) => ({ default: m.CalendarPage })),
+);
 const NotFoundPage = lazy(() =>
   import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 );
@@ -246,6 +249,14 @@ const ROUTES = [
         element: (
           <Shell>
             <AuditPage />
+          </Shell>
+        ),
+      },
+      {
+        path: '/calendar',
+        element: (
+          <Shell>
+            <CalendarPage />
           </Shell>
         ),
       },

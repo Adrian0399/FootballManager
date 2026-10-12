@@ -203,3 +203,25 @@ export function MoonIcon(props: IconProps) {
     </svg>
   );
 }
+
+/** Hamburger (mobile menu open trigger). */
+export function MenuIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <g stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+        <path d="M3 6h18M3 12h18M3 18h18" />
+      </g>
+    </svg>
+  );
+}
+
+/** Close (X) for the mobile menu. */
+export function CloseIcon(props: IconProps) {
+  return (
+    <svg {...baseProps} {...props}>
+      <g stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+        <path d="M6 6l12 12M18 6L6 18" />
+      </g>
+    </svg>
+  );
+}

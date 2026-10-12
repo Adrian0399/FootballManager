@@ -156,20 +156,13 @@
  * dark so the rest of the app stays readable. A fallback hex is
  * included so the page never paints a transparent body while loading.
  * ============================================================ */
+/* Wallpaper themes only replace the canvas image — every other token stays
+ * at the light default. Text, surfaces, borders and shadows are identical
+ * to the light theme, so only the background changes. */
 [data-theme='wp1'] {
-  --color-bg: url('/wallpaper-01.jpg') center / cover no-repeat fixed #1F202A;
-  --color-text:        #F4F0E3;
-  --color-text-dark:   #1A1B22;
-  --color-text-muted:  #C8CCD8;
-  --color-surface:     #262935;
-  --color-ink:         #E4E2DA;
+  --color-bg: url('/wallpaper-01.jpg') repeat #FFF8E7;
 }
 
 [data-theme='wp2'] {
-  --color-bg: url('/wallpaper-02.jpg') center / cover no-repeat fixed #1F202A;
-  --color-text:        #F4F0E3;
-  --color-text-dark:   #1A1B22;
-  --color-text-muted:  #C8CCD8;
-  --color-surface:     #262935;
-  --color-ink:         #E4E2DA;
+  --color-bg: url('/wallpaper-02.jpg') repeat #FFF8E7;
 }

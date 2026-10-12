@@ -450,6 +450,18 @@ export const leaguesService = {
       throw ApiError.conflict('Team is already enrolled in this league', 'TEAM_ALREADY_ENROLLED');
     }
 
+    // A team can only compete in ONE league at a time.
+    const other = await prisma.leagueTeam.findFirst({
+      where: { teamId: dto.teamId, leagueId: { not: leagueId } },
+      select: { league: { select: { name: true } } },
+    });
+    if (other) {
+      throw ApiError.conflict(
+        `El equipo ya pertenece a la liga "${other.league.name}". Un equipo solo puede estar en una liga a la vez.`,
+        'TEAM_IN_ANOTHER_LEAGUE',
+      );
+    }
+
     let seed = dto.seed;
     if (seed === undefined) {
       const last = await prisma.leagueTeam.findFirst({
@@ -460,16 +472,24 @@ export const leaguesService = {
       seed = (last?.seed ?? 0) + 1;
     }
 
-    return prisma.leagueTeam.create({
-      data: {
-        leagueId,
-        teamId: dto.teamId,
-        seed,
-        groupLabel: dto.groupLabel ?? null,
-        createdById: actorId,
-        updatedById: actorId,
-      },
-    });
+    const [created] = await prisma.$transaction([
+      prisma.leagueTeam.create({
+        data: {
+          leagueId,
+          teamId: dto.teamId,
+          seed,
+          groupLabel: dto.groupLabel ?? null,
+          createdById: actorId,
+          updatedById: actorId,
+        },
+      }),
+      prisma.team.update({
+        where: { id: dto.teamId },
+        data: { currentLeagueId: leagueId, updatedById: actorId },
+      }),
+    ]);
+
+    return created;
   },
 
   async updateLeagueTeam(
@@ -501,8 +521,16 @@ export const leaguesService = {
     if (!entry) {
       throw ApiError.notFound('Team is not enrolled in this league', 'ENROLLMENT_NOT_FOUND');
     }
-    await prisma.leagueTeam.delete({
-      where: { leagueId_teamId: { leagueId, teamId } },
-    });
+    await prisma.$transaction([
+      prisma.leagueTeam.delete({
+        where: { leagueId_teamId: { leagueId, teamId } },
+      }),
+      // Clear the denormalized pointer only if it still points here, so a
+      // re-enrollment into another league isn't clobbered.
+      prisma.team.updateMany({
+        where: { id: teamId, currentLeagueId: leagueId },
+        data: { currentLeagueId: null },
+      }),
+    ]);
   },
 };

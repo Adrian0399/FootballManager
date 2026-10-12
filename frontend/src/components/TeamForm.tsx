@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Button } from './ui/Button';
 import { TextField } from './ui/TextField';
 import { Select } from './ui/Select';
 import { Banner } from './ui/Banner';
+import { Stepper, type StepperStep } from './Stepper';
 import type { Team, TeamCreateInput } from '../types/team';
 import type { League } from '../types/league';
 import type { Field } from '../types/field';
@@ -33,16 +33,16 @@ const DEFAULT_EMOJI = '⚽';
 const DEFAULT_PRIMARY = '#FFE600';
 const DEFAULT_SECONDARY = '#0A0A0A';
 
-/**
- * Create / edit form for a single Team. The shape mirrors the planned
- * `teamCreateSchema` (Zod). In v1.0.0 mock mode the submit is a no-op
- * that surfaces a "demo" success message — the form UX is what we want
- * to review, the data write happens against the real API in v1.1.
- */
 export function TeamForm({ team, onSaved, onCancel }: TeamFormProps) {
   const isEdit = Boolean(team);
   const [serverError, setServerError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [step, setStep] = useState(0);
+
+  const STEPS: StepperStep[] = [
+    { id: 'identity', label: 'Identidad', hint: 'nombre y colores' },
+    { id: 'assign', label: 'Asignación', hint: 'liga y cancha' },
+  ];
 
   const { data: leagues } = useLeagues();
   const [fields, setFields] = useState<Field[]>([]);
@@ -66,6 +66,7 @@ export function TeamForm({ team, onSaved, onCancel }: TeamFormProps) {
     register,
     handleSubmit,
     reset,
+    trigger,
     formState: { errors, isSubmitting },
   } = useForm<TeamFormValues>({
     defaultValues: team
@@ -132,85 +133,106 @@ export function TeamForm({ team, onSaved, onCancel }: TeamFormProps) {
     }
   };
 
+  const STEP_FIELDS: Array<Array<keyof TeamFormValues>> = [
+    ['name', 'shortName', 'emoji', 'primaryColor', 'secondaryColor'],
+    ['leagueId', 'homeFieldId'],
+  ];
+
+  const goNext = async () => {
+    const valid = await trigger(STEP_FIELDS[step] ?? []);
+    if (!valid) return;
+    if (step === STEPS.length - 1) {
+      await handleSubmit(onSubmit)();
+    } else {
+      setStep((s) => s + 1);
+    }
+  };
+
   return (
-    <form className="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-      <div className="form-grid-2">
-        <TextField
-          id="team-name"
-          label="Nombre *"
-          placeholder="Linces FC"
-          error={errors.name?.message}
-          {...register('name', { required: 'Requerido' })}
-        />
-        <TextField
-          id="team-shortName"
-          label="Short (3 letras)"
-          placeholder="LIN"
-          maxLength={3}
-          error={errors.shortName?.message}
-          {...register('shortName', { required: 'Requerido' })}
-        />
-      </div>
-
-      <div className="form-grid-2">
-        <TextField
-          id="team-emoji"
-          label="Emoji / Escudo"
-          placeholder="🦁"
-          {...register('emoji')}
-        />
-        <Select id="team-league" label="Liga actual" {...register('leagueId')}>
-          <option value="">— Sin asignar —</option>
-          {(leagues ?? []).map((l) => (
-            <option key={l.id} value={l.id}>
-              {leagueLabel(l)}
-            </option>
-          ))}
-        </Select>
-      </div>
-
-      <div className="form-grid-2">
-        <TextField
-          id="team-primary"
-          label="Color primario"
-          type="color"
-          {...register('primaryColor')}
-        />
-        <TextField
-          id="team-secondary"
-          label="Color secundario"
-          type="color"
-          {...register('secondaryColor')}
-        />
-      </div>
-
-      <Select
-        id="team-homeField"
-        label="Cancha local (opcional)"
-        {...register('homeFieldId')}
+    <form className="form" noValidate>
+      <Stepper
+        steps={STEPS}
+        current={step}
+        onBack={() => setStep((s) => Math.max(0, s - 1))}
+        onNext={goNext}
+        onCancel={onCancel}
+        submitLabel={isEdit ? 'Guardar cambios' : 'Crear equipo'}
+        isLast={step === STEPS.length - 1}
+        submitting={isSubmitting}
       >
-        <option value="">— Sin cancha fija —</option>
-        {fields.map((f) => (
-          <option key={f.id} value={f.id}>
-            {f.name}
-          </option>
-        ))}
-      </Select>
+        {step === 0 && (
+          <>
+            <div className="form-grid-2">
+              <TextField
+                id="team-name"
+                label="Nombre *"
+                placeholder="Linces FC"
+                error={errors.name?.message}
+                {...register('name', { required: 'Requerido' })}
+              />
+              <TextField
+                id="team-shortName"
+                label="Short (3 letras)"
+                placeholder="LIN"
+                maxLength={3}
+                error={errors.shortName?.message}
+                {...register('shortName', { required: 'Requerido' })}
+              />
+            </div>
 
-      {serverError && <Banner tone="error">{serverError}</Banner>}
-      {success && <Banner tone="success">{success}</Banner>}
+            <TextField
+              id="team-emoji"
+              label="Emoji / Escudo"
+              placeholder="🦁"
+              {...register('emoji')}
+            />
 
-      <div
-        className="row-3 row-end row-wrap"
-        style={{ marginTop: 'var(--space-3)' }}
-      >
-        <Button variant="ghost" size="sm" onClick={onCancel}>
-          Cancelar
-        </Button>
-        <Button type="submit" size="sm" disabled={isSubmitting}>
-          {isSubmitting ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear equipo'}
-        </Button>
-      </div>
+            <div className="form-grid-2">
+              <TextField
+                id="team-primary"
+                label="Color primario"
+                type="color"
+                {...register('primaryColor')}
+              />
+              <TextField
+                id="team-secondary"
+                label="Color secundario"
+                type="color"
+                {...register('secondaryColor')}
+              />
+            </div>
+          </>
+        )}
+
+        {step === 1 && (
+          <>
+            <Select id="team-league" label="Liga actual" {...register('leagueId')}>
+              <option value="">— Sin asignar —</option>
+              {(leagues ?? []).map((l) => (
+                <option key={l.id} value={l.id}>
+                  {leagueLabel(l)}
+                </option>
+              ))}
+            </Select>
+
+            <Select
+              id="team-homeField"
+              label="Cancha local (opcional)"
+              {...register('homeFieldId')}
+            >
+              <option value="">— Sin cancha fija —</option>
+              {fields.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.name}
+                </option>
+              ))}
+            </Select>
+          </>
+        )}
+
+        {serverError && <Banner tone="error">{serverError}</Banner>}
+        {success && <Banner tone="success">{success}</Banner>}
+      </Stepper>
     </form>
   );
 }

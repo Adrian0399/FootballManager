@@ -21,6 +21,7 @@ import { TextArea } from './ui/TextArea';
 import { Select } from './ui/Select';
 import { Banner } from './ui/Banner';
 import { FieldError } from './ui/FieldError';
+import { Stepper, type StepperStep } from './Stepper';
 
 interface LeagueFormProps {
   /** When provided, the form is in "edit" mode and pre-populated. */
@@ -49,6 +50,14 @@ export function LeagueForm({ league, onSaved, onCancel }: LeagueFormProps) {
   const [serverError, setServerError] = useState<string | null>(null);
   const [fields, setFields] = useState<Field[] | null>(null);
   const [fieldsError, setFieldsError] = useState<string | null>(null);
+  const [step, setStep] = useState(0);
+
+  const STEPS: StepperStep[] = [
+    { id: 'basic', label: 'Datos básicos', hint: 'nombre y categoría' },
+    { id: 'format', label: 'Formato', hint: 'formato y tipo' },
+    { id: 'schedule', label: 'Calendario', hint: 'día, turno y cupo' },
+    { id: 'fields', label: 'Canchas', hint: 'asignar canchas' },
+  ];
 
   const {
     register,
@@ -56,6 +65,7 @@ export function LeagueForm({ league, onSaved, onCancel }: LeagueFormProps) {
     reset,
     control,
     watch,
+    trigger,
     formState: { errors, isSubmitting },
   } = useForm<LeagueCreateForm>({
     resolver: zodResolver(leagueCreateSchema),
@@ -175,10 +185,38 @@ export function LeagueForm({ league, onSaved, onCancel }: LeagueFormProps) {
   const selectedFormat = watch('format');
   void selectedFormat;
 
+  // Fields that must validate before leaving each step.
+  const STEP_FIELDS: Array<Array<keyof LeagueCreateForm>> = [
+    ['name', 'season', 'category', 'description'],
+    ['format', 'type', 'matchdays', 'homeAndAway'],
+    ['dayOfWeek', 'timeSlot', 'maxTeams', 'startDate', 'endDate'],
+    ['fieldIds'],
+  ];
+
+  const goNext = async () => {
+    const valid = await trigger(STEP_FIELDS[step] ?? []);
+    if (!valid) return;
+    if (step === STEPS.length - 1) {
+      await handleSubmit(onSubmit)();
+    } else {
+      setStep((s) => s + 1);
+    }
+  };
+
   return (
-    <form className="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-      {/* ----- 1. Datos básicos ----- */}
-      <fieldset className="form-section">
+    <form className="form" noValidate>
+      <Stepper
+        steps={STEPS}
+        current={step}
+        onBack={() => setStep((s) => Math.max(0, s - 1))}
+        onNext={goNext}
+        onCancel={onCancel}
+        submitLabel={isEdit ? 'Guardar cambios' : 'Crear liga'}
+        isLast={step === STEPS.length - 1}
+        submitting={isSubmitting}
+      >
+      {step === 0 && (
+            <fieldset className="form-section">
         <legend className="form-section__legend">Datos básicos</legend>
 
         <TextField
@@ -225,9 +263,9 @@ export function LeagueForm({ league, onSaved, onCancel }: LeagueFormProps) {
           {...register('description')}
         />
       </fieldset>
-
-      {/* ----- 2. Formato & estructura ----- */}
-      <fieldset className="form-section">
+      )}
+      {step === 1 && (
+            <fieldset className="form-section">
         <legend className="form-section__legend">Formato & estructura</legend>
 
         <div className="form-grid-2">
@@ -285,9 +323,9 @@ export function LeagueForm({ league, onSaved, onCancel }: LeagueFormProps) {
           </div>
         </div>
       </fieldset>
-
-      {/* ----- 3. Calendario & cupo ----- */}
-      <fieldset className="form-section">
+      )}
+      {step === 2 && (
+            <fieldset className="form-section">
         <legend className="form-section__legend">Calendario & cupo</legend>
 
         <div className="form-grid-2">
@@ -365,9 +403,9 @@ export function LeagueForm({ league, onSaved, onCancel }: LeagueFormProps) {
           </div>
         </div>
       </fieldset>
-
-      {/* ----- 4. Canchas ----- */}
-      <fieldset className="form-section">
+      )}
+      {step === 3 && (
+            <fieldset className="form-section">
         <legend className="form-section__legend">Canchas</legend>
 
         <div>
@@ -426,19 +464,9 @@ export function LeagueForm({ league, onSaved, onCancel }: LeagueFormProps) {
         </div>
       </fieldset>
 
+      )}
       {serverError && <Banner tone="error">{serverError}</Banner>}
-
-      <div
-        className="row-3 row-end row-wrap"
-        style={{ marginTop: 'var(--space-3)' }}
-      >
-        <Button variant="ghost" size="sm" onClick={onCancel}>
-          Cancelar
-        </Button>
-        <Button type="submit" size="sm" disabled={isSubmitting}>
-          {isSubmitting ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear liga'}
-        </Button>
-      </div>
+      </Stepper>
     </form>
   );
 }

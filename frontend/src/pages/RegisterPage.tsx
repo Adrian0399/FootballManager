@@ -1,10 +1,11 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { apiClient } from '../api/axios';
 import { useAuthStore } from '../store/auth.store';
 import { registerSchema, type RegisterForm } from '../utils/validation';
+import { invitesApi, type InviteResolved } from '../api/invites';
 import {
   type ErrorEnvelope,
   type SuccessEnvelope,
@@ -29,6 +30,30 @@ export function RegisterPage() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((s) => s.setAuth);
   const [serverError, setServerError] = useState<string | null>(null);
+  const [params] = useSearchParams();
+  const inviteToken = params.get('invite');
+  const [invite, setInvite] = useState<InviteResolved | null>(null);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+
+  // Resolve the invite (if present) to show the target team and lock the role.
+  useEffect(() => {
+    if (!inviteToken) return;
+    let cancelled = false;
+    invitesApi
+      .resolve(inviteToken)
+      .then((r) => {
+        if (!cancelled) setInvite(r);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          const e = err as { response?: { data?: { error?: { message?: string } } } };
+          setInviteError(e.response?.data?.error?.message ?? 'Invitación inválida');
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [inviteToken]);
 
   const {
     register,
@@ -44,6 +69,7 @@ export function RegisterPage() {
     const payload = {
       ...data,
       nickname: data.nickname || undefined,
+      inviteToken: inviteToken ?? undefined,
     };
     try {
       const res = await apiClient.post<SuccessEnvelope<AuthPayload>>(
@@ -93,6 +119,14 @@ export function RegisterPage() {
             </p>
 
             <form className="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+              {invite && (
+                <Banner tone="success">
+                  Invitación para unirte a <strong>{invite.team.name}</strong> como{' '}
+                  <strong>{invite.role === 'DT' ? 'Director Técnico' : 'Jugador'}</strong>.
+                </Banner>
+              )}
+              {inviteError && <Banner tone="error">{inviteError}</Banner>}
+
               <div className="form-grid-2">
                 <TextField
                   id="firstName"
@@ -131,21 +165,30 @@ export function RegisterPage() {
                   error={errors.birthDate?.message}
                   {...register('birthDate')}
                 />
-                <Select
-                  id="role"
-                  label="Rol"
-                  error={errors.role?.message}
-                  {...register('role')}
-                >
-                  {/* Self-registration cannot mint privileged roles:
-                      ADMIN / REFEREE / DT are provisioned by an admin
-                      from /users. The backend enforces this too. */}
-                  {PUBLIC_REGISTER_ROLES.map((r) => (
-                    <option key={r} value={r}>
-                      {r === 'PLAYER' ? 'Jugador' : r === 'ASSISTANT' ? 'Auxiliar' : r}
-                    </option>
-                  ))}
-                </Select>
+                {invite ? (
+                  <div>
+                    <span className="input-label">Rol</span>
+                    <div className="invite-role-badge">
+                      {invite.role === 'DT' ? 'Director Técnico' : 'Jugador'}
+                    </div>
+                  </div>
+                ) : (
+                  <Select
+                    id="role"
+                    label="Rol"
+                    error={errors.role?.message}
+                    {...register('role')}
+                  >
+                    {/* Self-registration cannot mint privileged roles:
+                        ADMIN / REFEREE / DT are provisioned by an admin
+                        from /users. The backend enforces this too. */}
+                    {PUBLIC_REGISTER_ROLES.map((r) => (
+                      <option key={r} value={r}>
+                        {r === 'PLAYER' ? 'Jugador' : r === 'ASSISTANT' ? 'Auxiliar' : r}
+                      </option>
+                    ))}
+                  </Select>
+                )}
               </div>
 
               <div className="form-grid-2">

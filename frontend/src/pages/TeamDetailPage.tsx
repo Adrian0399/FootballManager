@@ -13,6 +13,7 @@ import { RosterList } from '../components/RosterList';
 import { StaffBlock } from '../components/StaffBlock';
 import { TeamForm } from '../components/TeamForm';
 import { AddTeamMemberForm } from '../components/AddTeamMemberForm';
+import { InviteModal } from '../components/InviteModal';
 import { Modal } from '../components/Modal';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -44,6 +45,7 @@ export function TeamDetailPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [addMemberOpen, setAddMemberOpen] = useState(false);
   const [addMemberMsg, setAddMemberMsg] = useState<string | null>(null);
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   const { data: team, isLoading, error, refetch: refetchTeam } = useTeam(id);
   const { data: members, refetch: refetchMembers } = useTeamMembers(id);
@@ -135,6 +137,11 @@ export function TeamDetailPage() {
             {isAdmin && (
               <Button variant="cyan" onClick={() => setEditOpen(true)}>
                 Editar
+              </Button>
+            )}
+            {canManageMembers && (
+              <Button variant="lime" onClick={() => setInviteOpen(true)}>
+                Invitar
               </Button>
             )}
             {isAdmin && (
@@ -249,6 +256,15 @@ export function TeamDetailPage() {
           onCancel={() => setAddMemberOpen(false)}
         />
       </Modal>
+
+      {inviteOpen && (
+        <InviteModal
+          teamId={team.id}
+          teamName={team.name}
+          canInviteDT={canManageMembers}
+          onClose={() => setInviteOpen(false)}
+        />
+      )}
     </div>
   );
 }

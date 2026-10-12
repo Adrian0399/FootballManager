@@ -2180,130 +2180,123 @@
 }
 .kaibil-app .standings-table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
+  border-collapse: collapse;
   background: var(--color-surface);
-  border: var(--border-bold);
   border-radius: var(--radius-md);
   overflow: hidden;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: var(--text-sm);
+  color: var(--color-text);
 }
+
 .kaibil-app .standings-th {
-  background: var(--color-carbon);
-  color: var(--color-text-dark);
+  background: var(--color-row);
+  color: var(--color-text-muted);
   padding: var(--space-2) var(--space-3);
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: var(--text-xs);
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  border-bottom: var(--border-bold);
+  letter-spacing: 0.04em;
+  border-bottom: 2px solid var(--color-ink);
   user-select: none;
   cursor: pointer;
   white-space: nowrap;
-  transition: background var(--duration-fast) var(--ease-out);
 }
+
 .kaibil-app .standings-th--right { text-align: right; }
 .kaibil-app .standings-th--left { text-align: left; }
-.kaibil-app .standings-th.is-active {
-  background: var(--color-ink);
-  color: var(--color-lime);
-}
+
+.kaibil-app .standings-th.is-active { color: var(--color-cyan); }
+
 .kaibil-app .standings-th__arrow {
   display: inline-block;
   margin-left: 4px;
-  font-size: 0.8em;
+  font-size: 0.7em;
 }
+
 .kaibil-app .standings-row {
-  background: var(--color-surface);
   transition: background var(--duration-fast) var(--ease-out);
 }
+
+.kaibil-app .standings-row:hover { background: var(--color-row); }
+
+/* Zone bar for the top 3 (like UEFA qualification zones). */
 .kaibil-app .standings-row.is-top {
-  background: linear-gradient(90deg, var(--color-vamos) 0%, var(--color-surface) 35%);
+  box-shadow: inset 3px 0 0 var(--color-cyan);
 }
-.kaibil-app .standings-row:hover {
-  background: var(--color-row);
-}
+
 .kaibil-app .standings-cell {
   padding: var(--space-2) var(--space-3);
-  border-bottom: var(--border-thin);
-  color: var(--color-ink);
+  border-bottom: 1px solid var(--color-row);
+  color: var(--color-text);
   vertical-align: middle;
 }
-.kaibil-app .standings-row:last-child .standings-cell {
-  border-bottom: none;
-}
+
+.kaibil-app .standings-row:last-child .standings-cell { border-bottom: none; }
+
 .kaibil-app .standings-cell--num {
   text-align: right;
   font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
 }
-.kaibil-app .standings-cell--team {
-  text-align: left;
+
+.kaibil-app .standings-cell--rank {
+  color: var(--color-text-muted);
+  font-weight: 500;
 }
+
+.kaibil-app .standings-cell--team { text-align: left; }
+
 .kaibil-app .standings-cell--pts {
   font-size: var(--text-base);
-  color: var(--color-ink);
+  font-weight: 800;
+  color: var(--color-text);
 }
+
 .kaibil-app .standings-cell.is-pos { color: var(--color-success); font-weight: 600; }
 .kaibil-app .standings-cell.is-neg { color: var(--color-coral); font-weight: 600; }
-.kaibil-app .standings-rank {
-  display: inline-grid;
-  place-items: center;
-  min-width: 28px;
-  height: 28px;
-  border: var(--border-bold);
-  border-radius: var(--radius-sm);
-  font-family: var(--font-display);
-  font-size: var(--text-sm);
-  padding: 0 6px;
-  background: var(--color-row);
-  color: var(--color-ink);
-}
-.kaibil-app .standings-rank--top {
-  background: var(--color-ink);
-  color: var(--color-lime);
-  box-shadow: 2px 2px 0 var(--color-magenta);
-}
+
 .kaibil-app .standings-team {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  color: var(--color-ink);
-  border-bottom: none;
+  color: var(--color-text);
   text-decoration: none;
-  font-family: var(--font-body);
-  font-weight: 500;
+  font-weight: 600;
   min-width: 0;
   max-width: 100%;
 }
+
 .kaibil-app .standings-team:hover {
-  color: var(--color-magenta);
+  color: var(--color-cyan);
+  text-decoration: underline;
 }
+
+.kaibil-app .standings-team__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: none;
+}
+
 .kaibil-app .standings-team__name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 @media (max-width: 720px) {
-  .kaibil-app .standings-table {
-    font-size: var(--text-xs);
-  }
+  .kaibil-app .standings-table { font-size: var(--text-xs); }
   .kaibil-app .standings-cell,
-  .kaibil-app .standings-th {
-    padding: 6px 4px;
-  }
-  .kaibil-app .standings-team__name {
-    max-width: 140px;
-  }
-  /* Hide the less-important columns on mobile. */
+  .kaibil-app .standings-th { padding: 6px 4px; }
+  .kaibil-app .standings-team__name { max-width: 140px; }
   .kaibil-app .standings-th:nth-child(7),
   .kaibil-app .standings-cell:nth-child(7),
   .kaibil-app .standings-th:nth-child(8),
   .kaibil-app .standings-cell:nth-child(8),
   .kaibil-app .standings-th:nth-child(11),
-  .kaibil-app .standings-cell:nth-child(11) {
-    display: none;
-  }
+  .kaibil-app .standings-cell:nth-child(11) { display: none; }
 }
 
 /* ---------- Print (Paso 7) ---------- */
@@ -4869,8 +4862,22 @@
 }
 
 @media (max-width: 720px) {
-  .kaibil-app .cal-global__cell { min-height: 64px; padding: var(--space-1); }
-  .kaibil-app .cal-global__chip { font-size: 0.55rem; }
+  /* Horizontal scroll keeps the 7 columns wide enough to read the
+     "TEAM vs TEAM" chips instead of squeezing them into the viewport. */
+  .kaibil-app .cal-global { overflow-x: auto; }
+
+  .kaibil-app .cal-global__weekdays,
+  .kaibil-app .cal-global__grid {
+    min-width: 640px;
+  }
+
+  .kaibil-app .cal-global__cell { min-height: 72px; padding: var(--space-1); }
+
+  .kaibil-app .cal-global__chip { font-size: 0.62rem; }
+
+  /* Save space: hide the kickoff time; keep emoji + teams. */
+  .kaibil-app .cal-global__chip-time { display: none; }
+
   .kaibil-app .cal-global__popup { width: 240px; max-height: 280px; }
 }
 

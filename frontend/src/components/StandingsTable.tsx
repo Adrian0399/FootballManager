@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { StandingRow } from '../utils/standings';
-import { MOCK_TEAMS } from '../mocks/teams';
 
 interface StandingsTableProps {
   rows: StandingRow[];
@@ -91,7 +90,7 @@ export function StandingsTable({ rows, leagueId, groupLabel }: StandingsTablePro
             {header('P', 'losses')}
             {header('GF', 'goalsFor')}
             {header('GC', 'goalsAgainst')}
-            {header('DIF', 'goalDifference')}
+            {header('DG', 'goalDifference')}
             {header('PTS', 'points')}
             {header('Fair play', 'fairPlay')}
           </tr>
@@ -101,10 +100,8 @@ export function StandingsTable({ rows, leagueId, groupLabel }: StandingsTablePro
             const isTop = r.rank >= 1 && r.rank <= 3;
             return (
               <tr key={r.teamId} className={`standings-row ${isTop ? 'is-top' : ''}`.trim()}>
-                <td className="standings-cell standings-cell--num">
-                  <span className={`standings-rank standings-rank--${r.rank <= 3 ? 'top' : 'default'}`}>
-                    {r.rank}
-                  </span>
+                <td className="standings-cell standings-cell--num standings-cell--rank">
+                  {r.rank}
                 </td>
                 <td className="standings-cell standings-cell--team">
                   <Link
@@ -112,6 +109,7 @@ export function StandingsTable({ rows, leagueId, groupLabel }: StandingsTablePro
                     className="standings-team"
                     title={`Ver detalle de ${r.teamName}`}
                   >
+                    <span className="standings-team__dot" style={{ background: teamColor(r.teamId) }} aria-hidden="true" />
                     <span className="standings-team__name">{r.teamName}</span>
                   </Link>
                 </td>
@@ -142,10 +140,7 @@ export function StandingsTable({ rows, leagueId, groupLabel }: StandingsTablePro
 function readKey(r: StandingRow, k: SortKey): string | number {
   switch (k) {
     case 'rank': return r.rank;
-    case 'team': {
-      const t = MOCK_TEAMS.find((x) => x.id === r.teamId);
-      return t?.name ?? r.teamId;
-    }
+    case 'team': return r.teamName;
     case 'played': return r.played;
     case 'wins': return r.wins;
     case 'draws': return r.draws;
@@ -161,4 +156,13 @@ function readKey(r: StandingRow, k: SortKey): string | number {
 function formatDiff(d: number): string {
   if (d > 0) return `+${d}`;
   return String(d);
+}
+
+/** Stable colour for a team, derived from its id (hue 0-359). */
+function teamColor(id: string): string {
+  let h = 0;
+  for (let i = 0; i < id.length; i += 1) {
+    h = (h * 31 + id.charCodeAt(i)) % 360;
+  }
+  return `hsl(${h}, 62%, 46%)`;
 }

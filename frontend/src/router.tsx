@@ -74,6 +74,12 @@ const NotFoundPage = lazy(() =>
 const DesignPlayground = lazy(() =>
   import('./playground/DesignPlayground').then((m) => ({ default: m.DesignPlayground })),
 );
+const ComponentGallery = lazy(() =>
+  import('./pages/ComponentGallery').then((m) => ({ default: m.ComponentGallery })),
+);
+const SportKitPage = lazy(() =>
+  import('./pages/SportKitPage').then((m) => ({ default: m.SportKitPage })),
+);
 
 /**
  * Suspense boundary placed *inside* the layout, so fetching a new route
@@ -107,6 +113,25 @@ const ROUTES = [
       <RouteBoundary>
         <DesignPlayground />
       </RouteBoundary>
+    ),
+  },
+  // Live component gallery — the real React components (Button, Chip,
+  // Modal, Stepper…) with their props + interactive demos.
+  {
+    path: '/components',
+    element: (
+      <Shell>
+        <ComponentGallery />
+      </Shell>
+    ),
+  },
+  // Sport UI kit — new premium football aesthetic (player cards, buttons…).
+  {
+    path: '/sport-kit',
+    element: (
+      <Shell>
+        <SportKitPage />
+      </Shell>
     ),
   },
   {

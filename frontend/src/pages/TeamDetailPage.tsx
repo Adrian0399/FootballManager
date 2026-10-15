@@ -22,7 +22,7 @@ import { Chip } from '../components/ui/Chip';
 import { PageHeader } from '../components/ui/PageHeader';
 import { EmptyState } from '../components/ui/EmptyState';
 import { FORMAT_LABEL, TIME_SLOT_LABEL, WEEK_DAY_SHORT } from '../types/league';
-import type { TeamMemberPublic } from '../types/team';
+import type { TeamMemberPublic, MembershipRole } from '../types/team';
 
 type Tab = 'roster' | 'staff' | 'matches' | 'stats';
 
@@ -44,7 +44,12 @@ export function TeamDetailPage() {
   const [tab, setTab] = useState<Tab>('roster');
   const [editOpen, setEditOpen] = useState(false);
   const [addMemberOpen, setAddMemberOpen] = useState(false);
-  const [addMemberMsg, setAddMemberMsg] = useState<string | null>(null);
+  // Roles offered by the "add member" modal. Set per entry point so the
+  // Plantilla tab only offers PLAYER and the staff tab offers DT/ASSISTANT.
+  const [addMemberRoles, setAddMemberRoles] = useState<MembershipRole[]>([
+    'PLAYER',
+    'ASSISTANT',
+  ]);
   const [inviteOpen, setInviteOpen] = useState(false);
 
   const { data: team, isLoading, error, refetch: refetchTeam } = useTeam(id);
@@ -85,6 +90,12 @@ export function TeamDetailPage() {
   const refreshTeam = () => {
     refetchTeam();
     refetchMembers();
+  };
+
+  /** Opens the add-member modal, restricting the roles offered. */
+  const openAddMember = (roles: MembershipRole[]) => {
+    setAddMemberRoles(roles);
+    setAddMemberOpen(true);
   };
 
   if (isLoading && !team) {
@@ -145,7 +156,10 @@ export function TeamDetailPage() {
               </Button>
             )}
             {isAdmin && (
-              <Button variant="lime" onClick={() => setAddMemberOpen(true)}>
+              <Button
+                variant="lime"
+                onClick={() => openAddMember(['PLAYER', 'ASSISTANT'])}
+              >
                 Agregar miembro
               </Button>
             )}
@@ -199,15 +213,63 @@ export function TeamDetailPage() {
       </div>
 
       {tab === 'roster' && (
-        <Card>
-          <RosterList memberships={players} />
-        </Card>
+        <div className="stack-3">
+          <div className="row-3 row-between row-wrap">
+            <h3 style={{ fontSize: 'var(--text-lg)' }}>Jugadores ({players.length})</h3>
+            {isAdmin && (
+              <Button variant="lime" size="sm" onClick={() => openAddMember(['PLAYER'])}>
+                + Agregar jugador
+              </Button>
+            )}
+          </div>
+          <Card>
+            {players.length === 0 ? (
+              <EmptyState
+                title="Sin jugadores"
+                description="Agrega los jugadores que formarán parte de este equipo."
+                actions={
+                  isAdmin ? (
+                    <Button onClick={() => openAddMember(['PLAYER'])}>
+                      Agregar jugador
+                    </Button>
+                  ) : undefined
+                }
+              />
+            ) : (
+              <RosterList memberships={players} />
+            )}
+          </Card>
+        </div>
       )}
 
       {tab === 'staff' && (
-        <Card>
-          <StaffBlock memberships={staff} />
-        </Card>
+        <div className="stack-3">
+          <div className="row-3 row-between row-wrap">
+            <h3 style={{ fontSize: 'var(--text-lg)' }}>Cuerpo técnico ({staff.length})</h3>
+            {isAdmin && (
+              <Button variant="lime" size="sm" onClick={() => openAddMember(['DT', 'ASSISTANT'])}>
+                + Agregar
+              </Button>
+            )}
+          </div>
+          <Card>
+            {staff.length === 0 ? (
+              <EmptyState
+                title="Sin cuerpo técnico"
+                description="Agrega un Director Técnico o un Auxiliar Técnico."
+                actions={
+                  isAdmin ? (
+                    <Button onClick={() => openAddMember(['DT', 'ASSISTANT'])}>
+                      Agregar cuerpo técnico
+                    </Button>
+                  ) : undefined
+                }
+              />
+            ) : (
+              <StaffBlock memberships={staff} />
+            )}
+          </Card>
+        </div>
       )}
 
       {tab === 'matches' && (
@@ -243,11 +305,16 @@ export function TeamDetailPage() {
       <Modal
         open={addMemberOpen}
         onClose={() => setAddMemberOpen(false)}
-        title="Agregar miembro"
+        title={
+          addMemberRoles.length === 1 && addMemberRoles[0] === 'PLAYER'
+            ? 'Agregar jugador'
+            : 'Agregar miembro'
+        }
         description={team.name}
       >
         <AddTeamMemberForm
           team={team}
+          allowedRoles={addMemberRoles}
           existingUserIds={(members ?? []).map((m) => m.userId)}
           onAdded={() => {
             setAddMemberOpen(false);

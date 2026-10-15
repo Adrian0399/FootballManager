@@ -1,0 +1,530 @@
+/* ==========================================================================
+   Sport UI kit  (`.sport-ui` scope)
+   Premium football-dashboard aesthetic: royal blue + navy + clean white
+   cards, glass edges, soft layered shadows, heavy Inter weights. Inspired
+   by broadcast / UEFA-style match centers.
+   Fully isolated: every token + class lives under `.sport-ui`.
+   ========================================================================== */
+
+.sport-ui {
+  /* ---- Palette ---- */
+  --sp-blue: #2743e0;         /* royal blue — primary */
+  --sp-blue-bright: #4a67ff;  /* hover / highlights */
+  --sp-blue-deep: #14206b;    /* deep end of gradients */
+  --sp-sky: #2e6bff;          /* accents, links on light */
+  --sp-navy: #0d1740;         /* dark match cards */
+  --sp-navy-soft: #16224f;
+
+  --sp-ink: #0f1728;          /* primary text */
+  --sp-slate: #46536b;        /* secondary text */
+  --sp-mute: #94a0b4;         /* muted / column headers */
+  --sp-line: #e6eaf2;         /* hairline borders */
+  --sp-white: #ffffff;
+
+  --sp-green: #16a34a;        /* form W */
+  --sp-amber: #f59e0b;        /* form D */
+  --sp-red: #e5484d;          /* form L / red card */
+
+  /* Player card backdrop (saturated periwinkle studio gradient) */
+  --sp-player-grad: radial-gradient(118% 82% at 50% 6%, #f5f7ff 0%, #d3dafd 34%, #9aa6f3 70%, #7683ec 100%);
+
+  /* ---- Radii ---- */
+  --sp-r-xl: 22px;
+  --sp-r-lg: 16px;
+  --sp-r-md: 12px;
+  --sp-r-sm: 8px;
+  --sp-r-pill: 999px;
+
+  /* ---- Shadows (soft, layered, no hard offset) ---- */
+  --sp-shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 8px 24px rgba(30, 50, 120, 0.06);
+  --sp-shadow-lg: 0 2px 4px rgba(16, 24, 40, 0.04), 0 22px 50px -16px rgba(40, 60, 150, 0.28);
+
+  /* ---- Type ---- */
+  --sp-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  font-family: var(--sp-font);
+  color: var(--sp-ink);
+  /* Clean canvas so theme wallpapers (grass, etc.) don't bleed through. */
+  background: linear-gradient(180deg, #f7f9fe 0%, #eef1f9 100%);
+  min-height: 70vh;
+}
+
+/* Override the app's Bungee display headings inside the kit. */
+.sport-ui :is(h1, h2, h3, h4) {
+  font-family: var(--sp-font);
+  text-transform: none;
+  letter-spacing: -0.02em;
+  color: var(--sp-ink);
+}
+
+/* ==========================================================================
+   SportButton — broadcast pill buttons with layered depth
+   ========================================================================== */
+.sport-ui .sp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--sp-font);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
+  border-radius: var(--sp-r-pill);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background 0.16s, color 0.16s, border-color 0.16s, transform 0.06s, box-shadow 0.16s;
+}
+.sport-ui .sp-btn:active { transform: translateY(1px); }
+.sport-ui .sp-btn:focus-visible { outline: 2px solid var(--sp-sky); outline-offset: 2px; }
+.sport-ui .sp-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* sizes */
+.sport-ui .sp-btn--sm { height: 32px; padding: 0 14px; font-size: 13px; }
+.sport-ui .sp-btn--md { height: 40px; padding: 0 18px; }
+.sport-ui .sp-btn--lg { height: 48px; padding: 0 24px; font-size: 15px; }
+
+/* solid — royal-blue CTA with top highlight + drop shadow */
+.sport-ui .sp-btn--solid {
+  background: linear-gradient(180deg, #4a67ff 0%, #2743e0 100%);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 2px 10px rgba(39, 67, 224, 0.35);
+}
+.sport-ui .sp-btn--solid:hover {
+  background: linear-gradient(180deg, #5b78ff 0%, #3753ea 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 4px 16px rgba(39, 67, 224, 0.45);
+}
+
+/* navy — deep secondary */
+.sport-ui .sp-btn--navy {
+  background: linear-gradient(180deg, #1c2c63 0%, #0d1740 100%);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 2px 10px rgba(13, 23, 64, 0.35);
+}
+.sport-ui .sp-btn--navy:hover { background: linear-gradient(180deg, #24356f 0%, #16224f 100%); }
+
+/* outline — white outline for blue / navy backgrounds (glass) */
+.sport-ui .sp-btn--outline {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.55);
+}
+.sport-ui .sp-btn--outline:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: #fff;
+}
+
+/* soft — light-blue pill ("Ver detalles") on white cards */
+.sport-ui .sp-btn--soft {
+  background: linear-gradient(180deg, #eef2ff 0%, #e2e8ff 100%);
+  color: var(--sp-blue);
+  box-shadow: inset 0 0 0 1px rgba(39, 67, 224, 0.08);
+}
+.sport-ui .sp-btn--soft:hover { background: linear-gradient(180deg, #e5ebff 0%, #d6dfff 100%); }
+
+/* ghost — neutral outline on light */
+.sport-ui .sp-btn--ghost {
+  background: var(--sp-white);
+  color: var(--sp-ink);
+  border-color: var(--sp-line);
+  box-shadow: var(--sp-shadow);
+}
+.sport-ui .sp-btn--ghost:hover { background: #f7f9ff; border-color: #d5dcea; }
+
+.sport-ui .sp-btn--block { width: 100%; }
+
+/* ==========================================================================
+   PlayerCard  (`.sp-player`) — studio portrait with depth + watermark
+   ========================================================================== */
+.sport-ui .sp-player {
+  position: relative;
+  width: 220px;
+  aspect-ratio: 3 / 4.1;
+  border-radius: 22px;
+  overflow: hidden;
+  background: var(--sp-player-grad);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),   /* glass top edge */
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35),  /* faint inner ring */
+    0 1px 2px rgba(16, 24, 40, 0.05),
+    0 20px 44px -14px rgba(60, 80, 180, 0.45);
+  isolation: isolate;
+  flex: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.sport-ui .sp-player:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35),
+    0 2px 4px rgba(16, 24, 40, 0.05),
+    0 30px 60px -14px rgba(60, 80, 180, 0.55);
+}
+
+/* huge faded jersey number watermark behind the player */
+.sport-ui .sp-player__watermark {
+  position: absolute;
+  top: -8px;
+  right: -4px;
+  font-size: 128px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -8px;
+  color: rgba(255, 255, 255, 0.18);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* soft radial highlight behind the head */
+.sport-ui .sp-player__glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(56% 40% at 50% 24%, rgba(255, 255, 255, 0.85), transparent 72%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* diagonal sheen across the glass */
+.sport-ui .sp-player__sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0) 34%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.sport-ui .sp-player__photo {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 90%;
+  z-index: 2;
+}
+.sport-ui .sp-player__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+/* stylized player silhouette placeholder (head + shoulders) */
+.sport-ui .sp-player__silhouette {
+  width: 100%;
+  height: 100%;
+  display: block;
+  color: rgba(60, 74, 158, 0.42);
+}
+
+.sport-ui .sp-player__scrim {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 52%;
+  background: linear-gradient(to top, rgba(10, 14, 45, 0.72) 0%, rgba(10, 14, 45, 0.28) 45%, rgba(10, 14, 45, 0) 100%);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.sport-ui .sp-player__meta {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 11px;
+  padding: 15px;
+  color: #fff;
+  z-index: 4;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+.sport-ui .sp-player__num {
+  font-size: 38px;
+  font-weight: 900;
+  line-height: 0.82;
+  letter-spacing: -2px;
+  font-variant-numeric: tabular-nums;
+}
+.sport-ui .sp-player__id { display: flex; flex-direction: column; padding-bottom: 3px; }
+.sport-ui .sp-player__name {
+  font-size: 15.5px;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.3px;
+}
+.sport-ui .sp-player__pos {
+  font-size: 11.5px;
+  font-weight: 500;
+  opacity: 0.88;
+  margin-top: 2px;
+  letter-spacing: 0.2px;
+}
+
+/* ==========================================================================
+   Preview page scaffold  (`.sp-kit`) — hero, sections, demo stages
+   ========================================================================== */
+.sport-ui .sp-kit {
+  display: flex;
+  flex-direction: column;
+  gap: 44px;
+  padding-block: 28px 72px;
+}
+
+.sport-ui .sp-hero {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background:
+    radial-gradient(120% 150% at 88% -30%, #5b78ff 0%, transparent 46%),
+    linear-gradient(135deg, #2743e0 0%, #14206b 100%);
+  color: #fff;
+  border-radius: var(--sp-r-xl);
+  padding: 30px 34px;
+  box-shadow: var(--sp-shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+/* fine diagonal texture over the hero */
+.sport-ui .sp-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 11px);
+  pointer-events: none;
+}
+.sport-ui .sp-hero h1 {
+  position: relative;
+  margin: 0;
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -0.8px;
+  color: #fff;
+}
+.sport-ui .sp-hero p {
+  position: relative;
+  margin: 0;
+  opacity: 0.9;
+  font-size: 14.5px;
+  max-width: 62ch;
+  line-height: 1.5;
+}
+.sport-ui .sp-hero code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  background: rgba(255, 255, 255, 0.14);
+  padding: 1px 6px;
+  border-radius: 6px;
+}
+
+.sport-ui .sp-sec { display: flex; flex-direction: column; gap: 16px; }
+.sport-ui .sp-sec__head { display: flex; flex-direction: column; gap: 3px; }
+.sport-ui .sp-sec__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  color: var(--sp-ink);
+}
+.sport-ui .sp-sec__hint { margin: 0; font-size: 13.5px; color: var(--sp-slate); }
+
+.sport-ui .sp-stage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  background: var(--sp-white);
+  border: 1px solid var(--sp-line);
+  border-radius: var(--sp-r-lg);
+  box-shadow: var(--sp-shadow);
+  padding: 24px;
+}
+.sport-ui .sp-stage--navy {
+  background: linear-gradient(135deg, #16224f 0%, #0d1740 100%);
+  border-color: transparent;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), var(--sp-shadow);
+}
+
+.sport-ui .sp-stage__label {
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sp-mute);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* position group heading used above player rows */
+.sport-ui .sp-group {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  color: var(--sp-ink);
+  margin: 6px 0 2px;
+}
+.sport-ui .sp-row { display: flex; flex-wrap: wrap; gap: 18px; }
+
+@media (max-width: 560px) {
+  .sport-ui .sp-hero { padding: 22px; }
+  .sport-ui .sp-hero h1 { font-size: 25px; }
+  .sport-ui .sp-stage { padding: 16px; }
+  .sport-ui .sp-player { width: 158px; }
+  .sport-ui .sp-player__watermark { font-size: 96px; }
+}
+
+/* ==========================================================================
+   PlayerCard v2 — rating, club badge, position pill, micro-stats, accent
+   ========================================================================== */
+
+/* per-club accent glow at the top of the card */
+.sport-ui .sp-player__accent {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(72% 42% at 50% -4%, var(--sp-accent, #4a67ff), transparent 70%);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* leave room for the stats strip when present */
+.sport-ui .sp-player--stats .sp-player__meta { bottom: 46px; }
+.sport-ui .sp-player--stats .sp-player__scrim { height: 64%; }
+
+/* floating rating badge (top-right) */
+.sport-ui .sp-rating {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 15px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.8));
+  box-shadow: 0 8px 20px rgba(10, 14, 45, 0.28), inset 0 1px 0 #fff;
+  color: var(--sp-ink);
+  backdrop-filter: blur(6px);
+}
+.sport-ui .sp-rating__num { font-size: 19px; font-weight: 900; line-height: 1; letter-spacing: -0.5px; }
+.sport-ui .sp-rating__label { font-size: 8px; font-weight: 800; letter-spacing: 0.1em; color: var(--sp-slate); margin-top: 1px; }
+
+/* club crest chip (top-left) */
+.sport-ui .sp-club {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 5;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 6px 14px rgba(10, 14, 45, 0.22);
+  overflow: hidden;
+}
+.sport-ui .sp-club img { width: 74%; height: 74%; object-fit: contain; }
+.sport-ui .sp-club__fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--sp-blue);
+  background: linear-gradient(180deg, #eef2ff, #dbe2ff);
+}
+
+/* position pill under the name */
+.sport-ui .sp-pos {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  height: 17px;
+  padding: 0 8px;
+  margin-top: 5px;
+  border-radius: var(--sp-r-pill);
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(4px);
+}
+.sport-ui .sp-pos--GK { background: var(--sp-amber); border-color: var(--sp-amber); }
+.sport-ui .sp-pos--DEF { background: var(--sp-sky); border-color: var(--sp-sky); }
+.sport-ui .sp-pos--MID { background: var(--sp-green); border-color: var(--sp-green); }
+.sport-ui .sp-pos--FWD { background: var(--sp-red); border-color: var(--sp-red); }
+
+/* micro-stats strip along the bottom edge */
+.sport-ui .sp-player__stats {
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  padding: 8px 15px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+}
+.sport-ui .sp-stat { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.sport-ui .sp-stat__val {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.sport-ui .sp-stat__lbl {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+/* ==========================================================================
+   FormGuide — V / E / D streak dots
+   ========================================================================== */
+.sport-ui .sp-form { display: inline-flex; gap: 5px; align-items: center; }
+.sport-ui .sp-form__dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+.sport-ui .sp-form__dot--empty {
+  background: transparent;
+  border: 1.5px dashed var(--sp-line);
+  box-shadow: none;
+}
+.sport-ui .sp-form__dot--W { background: linear-gradient(180deg, #22b757, #16a34a); }
+.sport-ui .sp-form__dot--D { background: linear-gradient(180deg, #fbb040, #f59e0b); }
+.sport-ui .sp-form__dot--L { background: linear-gradient(180deg, #ef5a5f, #e5484d); }
+.sport-ui .sp-form--sm .sp-form__dot { width: 18px; height: 18px; font-size: 9px; }
+
+/* ==========================================================================
+   Section titles with an accent bar
+   ========================================================================== */
+.sport-ui .sp-sec__title {
+  position: relative;
+  padding-left: 15px;
+}
+.sport-ui .sp-sec__title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 5px;
+  height: 22px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--sp-blue-bright), var(--sp-blue));
+}

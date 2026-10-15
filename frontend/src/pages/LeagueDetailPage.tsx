@@ -13,6 +13,7 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { EmptyState } from '../components/ui/EmptyState';
 import { TeamBadge } from '../components/TeamBadge';
 import { LeagueForm } from '../components/LeagueForm';
+import { DefaultTeamsButton, nextPlaceholderStart } from '../components/DefaultTeamsButton';
 import { LeagueHighlightsPanel } from '../components/LeagueHighlightsPanel';
 import { LeagueCalendarTab } from '../components/LeagueCalendarTab';
 import { StandingsTable } from '../components/StandingsTable';
@@ -64,8 +65,12 @@ export function LeagueDetailPage() {
   const [editOpen, setEditOpen] = useState(false);
 
   const { data: league, isLoading, error } = useLeague(id);
-  const { data: assignedRaw } = useLeagueTeams(id);
+  const { data: assignedRaw, refetch: refetchTeams } = useLeagueTeams(id);
   const assigned = assignedRaw ?? [];
+
+  // How many slots are still empty, and the next "Equipo NN" number.
+  const missingTeams = Math.max(0, (league?.maxTeams ?? 0) - assigned.length);
+  const defaultStartAt = nextPlaceholderStart(assigned.map((t) => t.name));
 
   // Standings from backend.
   const standingsQuery = useStandings(id);
@@ -218,9 +223,29 @@ export function LeagueDetailPage() {
         <div className="stack-3">
           <div className="row-3 row-between row-wrap">
             <h3 style={{ fontSize: 'var(--text-lg)' }}>Equipos participantes</h3>
-            <span className="muted" style={{ fontSize: 'var(--text-sm)' }}>
-              {assigned.length} equipos
-            </span>
+            <div className="row-3 row-wrap" style={{ alignItems: 'center' }}>
+              <span className="muted" style={{ fontSize: 'var(--text-sm)' }}>
+                {assigned.length} / {league.maxTeams} equipos
+              </span>
+              {isAdmin && (
+                <>
+                  <Button variant="ghost" onClick={() => navigate('/teams')}>
+                    Catálogo de equipos
+                  </Button>
+                  {missingTeams > 0 && (
+                    <DefaultTeamsButton
+                      leagueId={id}
+                      count={missingTeams}
+                      startAt={defaultStartAt}
+                      onDone={refetchTeams}
+                    />
+                  )}
+                  <Button onClick={() => navigate(`/leagues/${id}/teams`)}>
+                    Gestionar equipos
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
           {assigned.length === 0 ? (
             <Card>
@@ -228,8 +253,28 @@ export function LeagueDetailPage() {
                 title="Sin equipos asignados"
                 description={
                   isAdmin
-                    ? 'Asigna los equipos que participarán en esta liga.'
+                    ? 'Inscribe los equipos que participarán en esta liga. Si aún no existen, créalos desde el catálogo o genera equipos de relleno para armar el calendario ya.'
                     : 'Pídele a un admin que asigne los equipos.'
+                }
+                actions={
+                  isAdmin ? (
+                    <div className="row-3 row-wrap">
+                      {missingTeams > 0 && (
+                        <DefaultTeamsButton
+                          leagueId={id}
+                          count={missingTeams}
+                          startAt={defaultStartAt}
+                          onDone={refetchTeams}
+                        />
+                      )}
+                      <Button variant="ghost" onClick={() => navigate(`/leagues/${id}/teams`)}>
+                        Inscribir equipos existentes
+                      </Button>
+                      <Button variant="ghost" onClick={() => navigate('/teams')}>
+                        Crear equipo
+                      </Button>
+                    </div>
+                  ) : undefined
                 }
               />
             </Card>
@@ -274,6 +319,11 @@ export function LeagueDetailPage() {
                 );
               })}
             </div>
+          )}
+          {assigned.length > 0 && (
+            <p className="muted" style={{ fontSize: 'var(--text-sm)' }}>
+              Haz clic en un equipo para gestionar su plantilla (jugadores y cuerpo técnico).
+            </p>
           )}
         </div>
       )}

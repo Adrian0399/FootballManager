@@ -72,6 +72,8 @@ export interface Match {
   knockoutStage?: KnockoutStage | null;
   /** 1-based position within the stage (1..N/2 for that stage). */
   knockoutPosition?: number | null;
+  /** 1-based leg within a two-legged knockout tie (1 or 2). */
+  knockoutLeg?: number | null;
   /** The winner of this match advances to this match. */
   knockoutFeedsIntoMatchId?: string | null;
   /** Resolved by the backend so the UI never renders a raw UUID. */
@@ -105,6 +107,7 @@ export interface MatchCreateInput {
   notes?: string | null;
   knockoutStage?: KnockoutStageInput | null;
   knockoutPosition?: number | null;
+  knockoutLeg?: number | null;
   knockoutFeedsIntoMatchId?: string | null;
 }
 

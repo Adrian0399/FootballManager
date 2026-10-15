@@ -154,6 +154,11 @@ const leagueBaseSchema = z.object({
     .union([z.boolean(), z.string()])
     .optional()
     .transform((v) => v === true || v === 'true' || v === 'on'),
+  /** True if the playoff (liguilla) ties are played home/away (two legs). */
+  knockoutHomeAndAway: z
+    .union([z.boolean(), z.string()])
+    .optional()
+    .transform((v) => v === true || v === 'true' || v === 'on'),
   /** Maximum number of teams allowed in the league. */
   maxTeams: z
     .string()

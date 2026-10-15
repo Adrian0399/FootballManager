@@ -107,8 +107,10 @@ export interface League {
   type?: LeagueType;
   /** Number of matchdays in the round-robin phase. */
   matchdays?: number;
-  /** True if home/away is played twice per pairing. */
+  /** True if home/away is played twice per pairing (round-robin phase). */
   homeAndAway?: boolean;
+  /** True if the playoff (liguilla) ties are played home/away (two legs). */
+  knockoutHomeAndAway?: boolean;
   /** Maximum number of teams allowed in the league. */
   maxTeams?: number;
   /** Default day of the week for matches. */
@@ -145,6 +147,8 @@ export type LeagueCreateInput = {
   /** Number of matchdays in the round-robin phase. */
   matchdays?: number | null;
   homeAndAway?: boolean | null;
+  /** True if the playoff (liguilla) ties are played home/away (two legs). */
+  knockoutHomeAndAway?: boolean | null;
   maxTeams?: number | null;
   dayOfWeek?: WeekDay | null;
   timeSlot?: TimeSlot | null;

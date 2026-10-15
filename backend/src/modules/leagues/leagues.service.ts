@@ -103,6 +103,7 @@ export const leaguesService = {
           type: dto.type ?? null,
           matchdaysCount: dto.matchdaysCount ?? null,
           homeAndAway: dto.homeAndAway ?? null,
+          knockoutHomeAndAway: dto.knockoutHomeAndAway ?? null,
           maxTeams: dto.maxTeams ?? null,
           dayOfWeek: dto.dayOfWeek ?? null,
           timeSlot: dto.timeSlot ?? null,
@@ -342,6 +343,7 @@ export const leaguesService = {
     const base = dto.startDate ?? (lastMd ? addDays(lastMd.date, 7) : new Date());
     const hhmm = league.timeSlot ? TIME_SLOT_HOUR[league.timeSlot] : '19:00';
     const bracket = EIGHT_TEAM_BRACKET;
+    const twoLegs = league.knockoutHomeAndAway === true;
 
     const result = await prisma.$transaction(async (tx) => {
       if (existingKo > 0) {
@@ -358,6 +360,7 @@ export const leaguesService = {
       const createKoMatch = (
         stage: 'QUARTERS' | 'SEMIS' | 'FINAL' | 'THIRD_PLACE',
         position: number,
+        leg: number,
         homeIdx: number,
         awayIdx: number,
         scheduledAt: Date,
@@ -373,54 +376,116 @@ export const leaguesService = {
             status: 'SCHEDULED',
             knockoutStage: stage,
             knockoutPosition: position,
+            knockoutLeg: leg,
             createdById: actorId,
             updatedById: actorId,
           },
         });
 
-      const qfDates = [0, 2, 4, 6].map((d) => withTime(addDays(base, d), hhmm));
-      const qfIds: string[] = [];
+      /**
+       * Creates a tie: a single match, or two legs (home/away swapped)
+       * when the league plays its playoff home-and-away. Returns every
+       * match id in the tie (the first one is the tie's anchor).
+       */
+      const createTie = async (
+        stage: 'QUARTERS' | 'SEMIS' | 'FINAL' | 'THIRD_PLACE',
+        position: number,
+        homeIdx: number,
+        awayIdx: number,
+        leg1At: Date,
+        leg2At: Date,
+      ): Promise<string[]> => {
+        const first = await createKoMatch(stage, position, 1, homeIdx, awayIdx, leg1At);
+        if (!twoLegs) return [first.id];
+        const second = await createKoMatch(stage, position, 2, awayIdx, homeIdx, leg2At);
+        return [first.id, second.id];
+      };
+
+      // Round dates. Single-leg keeps the compact 2-day spacing; two-leg
+      // gives each tie a week between legs and each round a week's gap.
+      const qfLegOffsets: [number, number][] = twoLegs
+        ? [[0, 7], [2, 9], [4, 11], [6, 13]]
+        : [[0, 0], [2, 0], [4, 0], [6, 0]];
+      const sfLegOffsets: [number, number][] = twoLegs
+        ? [[14, 21], [15, 22]]
+        : [[9, 0], [10, 0]];
+      const finalLegOffsets: [number, number] = twoLegs ? [28, 35] : [12, 0];
+
+      const qfTies: string[][] = [];
       for (let i = 0; i < bracket.quarters.length; i += 1) {
         const [h, a] = bracket.quarters[i]!;
-        const m = await createKoMatch('QUARTERS', i + 1, h, a, qfDates[i]!);
-        qfIds.push(m.id);
+        const [l1, l2] = qfLegOffsets[i]!;
+        qfTies.push(
+          await createTie(
+            'QUARTERS',
+            i + 1,
+            h,
+            a,
+            withTime(addDays(base, l1!), hhmm),
+            withTime(addDays(base, l2!), hhmm),
+          ),
+        );
       }
 
-      const sfDates = [withTime(addDays(base, 9), hhmm), withTime(addDays(base, 10), hhmm)];
-      const sfIds: string[] = [];
+      const sfTies: string[][] = [];
       for (let i = 0; i < bracket.semis.length; i += 1) {
         const [h, a] = bracket.semis[i]!;
-        const m = await createKoMatch('SEMIS', i + 1, h, a, sfDates[i]!);
-        sfIds.push(m.id);
+        const [l1, l2] = sfLegOffsets[i]!;
+        sfTies.push(
+          await createTie(
+            'SEMIS',
+            i + 1,
+            h,
+            a,
+            withTime(addDays(base, l1!), hhmm),
+            withTime(addDays(base, l2!), hhmm),
+          ),
+        );
       }
 
-      const finalDate = withTime(addDays(base, 12), hhmm);
-      const thirdDate = addHours(finalDate, 2);
-      const finalMatch = await createKoMatch('FINAL', 1, bracket.final[0], bracket.final[1], finalDate);
-      const thirdMatch = await createKoMatch(
+      const [finL1, finL2] = finalLegOffsets;
+      const finalDate = withTime(addDays(base, finL1!), hhmm);
+      const finalLeg2Date = withTime(addDays(base, finL2!), hhmm);
+      const finalTie = await createTie(
+        'FINAL',
+        1,
+        bracket.final[0],
+        bracket.final[1],
+        finalDate,
+        finalLeg2Date,
+      );
+      await createTie(
         'THIRD_PLACE',
         1,
         bracket.third[0],
         bracket.third[1],
-        thirdDate,
+        addHours(finalDate, 2),
+        addHours(finalLeg2Date, 2),
       );
 
-      await tx.match.update({ where: { id: qfIds[0]! }, data: { knockoutFeedsIntoMatchId: sfIds[0]! } });
-      await tx.match.update({ where: { id: qfIds[1]! }, data: { knockoutFeedsIntoMatchId: sfIds[0]! } });
-      await tx.match.update({ where: { id: qfIds[2]! }, data: { knockoutFeedsIntoMatchId: sfIds[1]! } });
-      await tx.match.update({ where: { id: qfIds[3]! }, data: { knockoutFeedsIntoMatchId: sfIds[1]! } });
-      await tx.match.update({ where: { id: sfIds[0]! }, data: { knockoutFeedsIntoMatchId: finalMatch.id } });
-      await tx.match.update({ where: { id: sfIds[1]! }, data: { knockoutFeedsIntoMatchId: finalMatch.id } });
-      void thirdMatch;
+      /** Links every match of a tie into the next round's first leg. */
+      const linkTie = async (fromTie: string[], into: string): Promise<void> => {
+        for (const id of fromTie) {
+          await tx.match.update({ where: { id }, data: { knockoutFeedsIntoMatchId: into } });
+        }
+      };
+
+      const finalAnchor = finalTie[0]!;
+      for (let i = 0; i < qfTies.length; i += 1) {
+        await linkTie(qfTies[i]!, sfTies[Math.floor(i / 2)]![0]!);
+      }
+      for (let i = 0; i < sfTies.length; i += 1) {
+        await linkTie(sfTies[i]!, finalAnchor);
+      }
 
       return { matchdayId: md.id };
     });
 
     return {
-      quarters: 4,
-      semis: 2,
-      final: 1,
-      thirdPlace: 1,
+      quarters: twoLegs ? 8 : 4,
+      semis: twoLegs ? 4 : 2,
+      final: twoLegs ? 2 : 1,
+      thirdPlace: twoLegs ? 2 : 1,
       matchdayId: result.matchdayId,
     };
   },

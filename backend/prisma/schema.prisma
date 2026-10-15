@@ -310,8 +310,12 @@ model League {
   // Number of matchdays in the round-robin phase (computed by fixture
   // generation but stored for query convenience).
   matchdaysCount Int?          @map("matchdays")
-  // True if home/away is played twice per pairing.
+  // True if home/away is played twice per pairing (round-robin phase).
   homeAndAway    Boolean?      @map("home_and_away")
+  // True if the playoff (liguilla) ties are played home/away — two legs
+  // per pairing instead of a single match. Only meaningful when `type`
+  // includes a knockout (GROUPS_KNOCKOUT / KNOCKOUT_ONLY).
+  knockoutHomeAndAway Boolean? @map("knockout_home_and_away")
   // Maximum number of teams allowed. Triggers over-capacity warnings.
   maxTeams       Int?          @map("max_teams")
   // Default day of the week for matches.
@@ -536,6 +540,8 @@ model Match {
   knockoutStage            KnockoutStage? @map("knockout_stage")
   // 1-based position within the stage.
   knockoutPosition         Int?           @map("knockout_position")
+  // 1-based leg within a two-legged tie; NULL/1 for single-match ties.
+  knockoutLeg              Int?           @map("knockout_leg")
   // The winner of this match advances to this match id.
   knockoutFeedsIntoMatchId String?        @map("knockout_feeds_into_match_id") @db.Uuid
 
